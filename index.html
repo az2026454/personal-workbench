@@ -2355,16 +2355,11 @@ initNav();
     document.head.appendChild(l2);
   });
 
-  // 2. 注册最小 service worker（通过 Blob URL，让浏览器触发 install prompt）
-  const swCode = `
-    self.addEventListener('install', e => self.skipWaiting());
-    self.addEventListener('activate', e => e.waitUntil(clients.claim()));
-    self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => new Response('离线中'))));
-  `;
+  // 2. 注册真实 service worker（同域文件，Android 才识别为独立 PWA）
   if ('serviceWorker' in navigator) {
-    const swBlob = new Blob([swCode], { type: 'application/javascript' });
-    const swUrl = URL.createObjectURL(swBlob);
-    navigator.serviceWorker.register(swUrl, { scope: './' }).catch(() => {});
+    navigator.serviceWorker.register('./sw.js', { scope: './' })
+      .then(() => console.log('[PWA] SW registered'))
+      .catch(() => console.log('[PWA] SW fallback'));
   }
 
   // 3. 监听安装提示，自动弹出或显示按钮
@@ -2375,8 +2370,8 @@ initNav();
     // 显示安装提示条
     const bar = document.createElement('div');
     bar.id = 'installBar';
-    bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#E88A9A,#F0A0B0);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:center;gap:12px;font-size:14px;box-shadow:0 4px 16px rgba(232,138,154,0.4);animation:slideDown 0.4s ease;';
-    bar.innerHTML = '<span>📱 将工作台添加到主屏幕，像 App 一样使用</span><button id="btnInstall" style="background:#fff;color:#E88A9A;border:none;padding:6px 18px;border-radius:20px;font-weight:700;cursor:pointer;font-size:13px;">立即安装</button><button id="btnCloseInstall" style="background:none;color:#fff;border:none;padding:6px 10px;cursor:pointer;font-size:18px;">✕</button>';
+    bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#8266C0,#614BA6);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:center;gap:12px;font-size:14px;box-shadow:0 4px 16px rgba(98,75,166,0.35);animation:slideDown 0.4s ease;';
+    bar.innerHTML = '<span>📱 安装「工作台」到手机，像独立 App 一样使用</span><button id="btnInstall" style="background:#fff;color:#8266C0;border:none;padding:6px 20px;border-radius:20px;font-weight:700;cursor:pointer;font-size:13px;">安装</button><button id="btnCloseInstall" style="background:none;color:#fff;border:none;padding:6px 10px;cursor:pointer;font-size:18px;">✕</button>';
     document.body.appendChild(bar);
     const style = document.createElement('style');
     style.textContent = '@keyframes slideDown{from{transform:-100%}to{transform:0}}';

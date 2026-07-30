@@ -164,6 +164,17 @@ html, body {
 .cal-cell.marked { cursor:pointer; }
 .cal-cell.marked:hover { background:rgba(110,79,174,0.12); }
 .cal-dot { position:absolute; bottom:3px; font-size:10px; line-height:1; }
+.cal-cell.work { background: rgba(86, 191, 160, 0.18); font-weight: 700; color: #2E8B6E; }
+.cal-cell.work.today { background: rgba(86, 191, 160, 0.30); }
+.cal-legend { display:flex; gap:16px; flex-wrap:wrap; margin: 2px 2px 6px; font-size:12px; color: var(--text-light); }
+.cal-legend span { display:inline-flex; align-items:center; gap:4px; }
+
+/* 班表设置条 + 日期选择 */
+.schedule-bar { display:flex; align-items:center; justify-content:space-between; gap:10px; background: rgba(255,255,255,0.6); border-radius:14px; padding:10px 14px; margin: 4px 0 8px; box-shadow:0 2px 10px rgba(85,58,147,0.08); }
+.schedule-bar .sb-info { font-size:13px; color: var(--text-main); }
+.schedule-bar .sb-info b { color: #2E8B6E; }
+.ws-day { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:10px; background: rgba(110,79,174,0.08); font-size:13px; cursor:pointer; user-select:none; transition:all 0.15s; }
+.ws-day.active { background: var(--accent-mint); color: #2E8B6E; font-weight:700; box-shadow:0 2px 8px rgba(86,191,160,0.3); }
 
 /* ===== 年剩余天数 ===== */
 .year-remain { background:linear-gradient(135deg, #6E4FAE, #503791); color:#fff; border-radius:16px; padding:14px 18px; margin:12px 0; display:flex; align-items:center; justify-content:space-between; box-shadow:0 4px 16px rgba(85,58,147,0.25); }
@@ -723,6 +734,10 @@ body.fs .menu-toggle { display: flex; }
         天数倒计时
       </div>
       <button class="btn btn-primary" onclick="openModal('countdown')">+ 添加倒计时</button>
+    </div>
+    <div class="schedule-bar">
+      <div class="sb-info">🗓️ 每月班表：<b id="wsCount">未设置</b></div>
+      <button class="btn btn-primary" style="padding:6px 14px;font-size:13px;" onclick="openWorkSchedule()">设置班表</button>
     </div>
     <div id="countdownCalendar"></div>
     <div id="countdownList"></div>
@@ -2078,12 +2093,39 @@ function renderCountdown() {
   const today = new Date();
   today.setHours(0,0,0,0);
 
-  // 日历
+  // 班表信息条
+  const schedule = getWorkSchedule();
+  const wsCountEl = document.getElementById('wsCount');
+  if (wsCountEl) wsCountEl.textContent = (schedule.days && schedule.days.length) ? (schedule.days.length + ' 天/月') : '未设置';
+
+  // 日历：合并倒计时标记 + 每月班表（按日期循环）
   if (!calState.countdown) { const n = new Date(); calState.countdown = { y: n.getFullYear(), m: n.getMonth() }; }
+  const cy = calState.countdown.y, cm = calState.countdown.m;
+  const cdMarks = buildCountdownMarks(list);
+  const marks = {};
+  if (schedule.days && schedule.days.length) {
+    const dim = new Date(cy, cm + 1, 0).getDate();
+    schedule.days.forEach(d => {
+      if (d >= 1 && d <= dim) {
+        const ds = `${cy}-${String(cm + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        marks[ds] = { emoji: schedule.emoji || '💼', work: true };
+      }
+    });
+  }
+  Object.keys(cdMarks).forEach(ds => {
+    if (marks[ds]) marks[ds].emoji = cdMarks[ds].emoji; // 同时是倒计时：保留上班底色，显示倒计时图标
+    else marks[ds] = cdMarks[ds];
+  });
   renderCalendar('countdownCalendar', calState.countdown, {
-    marks: buildCountdownMarks(list),
+    marks,
     onPrev: 'cdPrevMonth()', onNext: 'cdNextMonth()', onSelect: 'selectCdDate'
   });
+  // 图例
+  const calBox = document.getElementById('countdownCalendar');
+  let legend = '';
+  if (list.length) legend += '<span>📌 倒计时</span>';
+  if (schedule.days && schedule.days.length) legend += `<span>${schedule.emoji || '💼'} 每月上班日</span>`;
+  if (legend && calBox) calBox.insertAdjacentHTML('beforeend', `<div class="cal-legend">${legend}</div>`);
 
   if (list.length === 0) {
     listEl.innerHTML = emptyState('暂无倒计时', '点击右上角添加你的第一个倒计时事件');
@@ -2143,7 +2185,7 @@ function renderCountdown() {
 // ========================================
 function clearAllData() {
   if (!confirm('确定要清除所有数据吗？此操作不可恢复！')) return;
-  const keys = ['wardrobe','finance','travel','gift','health','weight','todo','countdown'];
+  const keys = ['wardrobe','finance','travel','gift','health','weight','todo','countdown','workSchedule'];
   keys.forEach(k => localStorage.removeItem('pw_' + k));
   showToast('所有数据已清除');
   renderDashboard();
@@ -2195,6 +2237,7 @@ function renderCalendar(targetId, state, opts) {
     const cls = ['cal-cell'];
     if (ds === todayStr) cls.push('today');
     if (mark) cls.push('marked');
+    if (mark && mark.work) cls.push('work');
     const click = opts.onSelect ? `onclick="${opts.onSelect}('${ds}')"` : '';
     const dot = mark ? `<span class="cal-dot">${mark.emoji || '•'}</span>` : '';
     grid += `<div class="${cls.join(' ')}" ${click}>${cell.d}${dot}</div>`;
@@ -2234,6 +2277,64 @@ function selectHealthDate(ds) { pendingHealthDate = ds; openModal('health'); }
 function cdPrevMonth() { const s = calState.countdown; s.m--; if (s.m < 0) { s.m = 11; s.y--; } renderCountdown(); }
 function cdNextMonth() { const s = calState.countdown; s.m++; if (s.m > 11) { s.m = 0; s.y++; } renderCountdown(); }
 function selectCdDate(ds) { pendingCdDate = ds; openModal('countdown'); }
+
+// ========================================
+// 每月班表（按日期循环的上班日）
+// ========================================
+function getWorkSchedule() {
+  try { return JSON.parse(localStorage.getItem('pw_workSchedule')) || { days: [], emoji: '💼' }; }
+  catch (e) { return { days: [], emoji: '💼' }; }
+}
+function setWorkSchedule(s) { localStorage.setItem('pw_workSchedule', JSON.stringify(s)); }
+
+function openWorkSchedule() {
+  const s = getWorkSchedule();
+  const sel = s.days || [];
+  const modal = document.getElementById('modalContent');
+  modal.innerHTML = `
+    <div class="modal-title">设置每月班表</div>
+    <p style="font-size:13px;color:var(--text-light);margin-bottom:14px;">选择每月固定的上班日（按日期循环，例如 1、5、10…），会在倒计时日历中标记为 ${s.emoji || '💼'}。可多次设置覆盖。</p>
+    <div class="form-group">
+      <label class="form-label">上班日图标 emoji</label>
+      <input class="form-input" id="ws_emoji" value="${s.emoji || '💼'}" placeholder="💼" style="max-width:120px;">
+    </div>
+    <div class="form-group">
+      <label class="form-label">选择每月上班日（点选 / 取消）</label>
+      <div id="wsDays" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">
+        ${Array.from({ length: 31 }, (_, i) => {
+          const d = i + 1;
+          const on = sel.includes(d);
+          return `<div class="ws-day ${on ? 'active' : ''}" data-d="${d}" onclick="toggleWsDay(this)">${d}</div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:18px;">
+      <button class="btn btn-ghost" style="flex:1" onclick="clearWorkSchedule()">清空</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" style="flex:1.4" onclick="saveWorkSchedule()">保存</button>
+    </div>
+  `;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function toggleWsDay(el) { el.classList.toggle('active'); }
+
+function saveWorkSchedule() {
+  const days = [...document.querySelectorAll('#wsDays .ws-day.active')]
+    .map(e => parseInt(e.dataset.d, 10)).sort((a, b) => a - b);
+  const emoji = (document.getElementById('ws_emoji').value || '💼').trim() || '💼';
+  setWorkSchedule({ days, emoji });
+  closeModal();
+  renderCountdown();
+  showToast('班表已保存：每月 ' + (days.length ? days.length + ' 天' : '0 天'));
+}
+
+function clearWorkSchedule() {
+  setWorkSchedule({ days: [], emoji: '💼' });
+  closeModal();
+  renderCountdown();
+  showToast('班表已清空');
+}
 
 initNav();
 

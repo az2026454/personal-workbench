@@ -14,11 +14,11 @@
 <style>
 /* ===== 清新女生风主题 ===== */
 :root {
-  --bg-main: #FAF5F0;
-  --nav-bg: #F5E6E0;
+  --bg-main: #F3EEFB;
+  --nav-bg: #553A93;
   --nav-active: #F0A0B0;
-  --nav-text: #8B6F6F;
-  --nav-text-active: #5A3D3D;
+  --nav-text: #E9DEF7;
+  --nav-text-active: #FFFFFF;
   --accent: #E88A9A;
   --accent-light: #F5B5C0;
   --accent-soft: #FBE9EE;
@@ -46,7 +46,7 @@
 html, body {
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-  background: linear-gradient(180deg, #FFFFFF 0%, var(--bg-tint, #F5F9FC) 50%, var(--bg-deep, #A0C4E8) 100%);
+  background: linear-gradient(180deg, #F6F1FC 0%, #ECE2F8 55%, #E0D1F3 100%);
   color: var(--text-main);
   font-size: 14px;
   overflow: hidden;
@@ -57,7 +57,7 @@ html, body {
   position: fixed;
   left: 0; top: 0; bottom: 0;
   width: var(--nav-width);
-  background: linear-gradient(180deg, #FFFFFF 0%, var(--bg-tint, #F5F9FC) 50%, var(--bg-deep, #A0C4E8) 100%);
+  background: linear-gradient(180deg, #6E4FAE 0%, #503791 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -76,7 +76,7 @@ html, body {
   margin-bottom: 24px;
   font-size: 20px;
   color: white;
-  box-shadow: 0 4px 12px rgba(232, 138, 154, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   font-weight: 700;
 }
 
@@ -109,7 +109,7 @@ html, body {
   text-align: center;
 }
 
-.nav-item:hover { background: rgba(232, 138, 154, 0.1); color: var(--accent); }
+.nav-item:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
 .nav-item.active { background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 100%); color: white; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); }
 .nav-item.active .nav-icon { font-size: 22px; }
 
@@ -143,12 +143,34 @@ html, body {
 .nav-item.dragging .nav-icon { font-size: 22px; }
 .nav-tip {
   font-size: 9px;
-  color: var(--text-light);
+  color: rgba(255, 255, 255, 0.7);
   text-align: center;
   padding: 0 0 4px;
-  opacity: 0.7;
+  opacity: 0.9;
   line-height: 1.3;
 }
+
+/* ===== 日历组件 ===== */
+.calendar { background: rgba(255,255,255,0.55); border-radius: 16px; padding: 12px; margin: 12px 0; box-shadow: 0 2px 10px rgba(85,58,147,0.08); }
+.cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.cal-title { font-weight:700; color:var(--text-main); font-size:15px; }
+.cal-nav { width:30px; height:30px; border-radius:50%; border:none; background:rgba(110,79,174,0.12); color:#553A93; font-size:18px; cursor:pointer; }
+.cal-nav:active { background:rgba(110,79,174,0.25); }
+.cal-week { display:grid; grid-template-columns:repeat(7,1fr); text-align:center; font-size:11px; color:var(--text-light); margin-bottom:6px; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.cal-cell { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:13px; border-radius:10px; color:var(--text-main); position:relative; }
+.cal-cell.other { color:#C9BCDC; }
+.cal-cell.today { background:rgba(110,79,174,0.15); font-weight:700; }
+.cal-cell.marked { cursor:pointer; }
+.cal-cell.marked:hover { background:rgba(110,79,174,0.12); }
+.cal-dot { position:absolute; bottom:3px; font-size:10px; line-height:1; }
+
+/* ===== 年剩余天数 ===== */
+.year-remain { background:linear-gradient(135deg, #6E4FAE, #503791); color:#fff; border-radius:16px; padding:14px 18px; margin:12px 0; display:flex; align-items:center; justify-content:space-between; box-shadow:0 4px 16px rgba(85,58,147,0.25); }
+.year-remain .yr-big { font-size:30px; font-weight:800; }
+.year-remain .yr-sub { font-size:12px; opacity:0.92; }
+.year-remain .yr-bar { flex:1; margin:0 16px; height:8px; background:rgba(255,255,255,0.25); border-radius:5px; overflow:hidden; }
+.year-remain .yr-fill { height:100%; background:#fff; border-radius:5px; }
 
 /* ===== 主内容区 ===== */
 .main-content {
@@ -571,6 +593,7 @@ html, body {
       </div>
       <div style="font-size:13px;color:var(--text-light);" id="dashDate"></div>
     </div>
+    <div id="yearRemain"></div>
     <div class="stats-grid" id="dashboardStats"></div>
     <div class="card" id="dashboardRecent"></div>
     <div id="weatherWidget"></div>
@@ -639,6 +662,7 @@ html, body {
       <button class="btn btn-primary" onclick="openModal('health')">+ 记录体感</button>
     </div>
     <div id="periodWidget"></div>
+    <div id="healthCalendar"></div>
     <div id="healthList"></div>
   </div>
 
@@ -678,6 +702,7 @@ html, body {
       </div>
       <button class="btn btn-primary" onclick="openModal('countdown')">+ 添加倒计时</button>
     </div>
+    <div id="countdownCalendar"></div>
     <div id="countdownList"></div>
   </div>
 
@@ -752,8 +777,6 @@ function applyAccent(pageId) {
   root.style.setProperty('--accent', a.m);
   root.style.setProperty('--accent-light', a.l);
   root.style.setProperty('--accent-soft', a.s);
-  root.style.setProperty('--bg-tint', a.s);
-  root.style.setProperty('--bg-deep', a.l);
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', a.m);
 }
@@ -778,7 +801,7 @@ function renderNav() {
     if (!item) return '';
     const a = ACCENT_MAP[id] || ACCENT_MAP.dashboard;
     return `<div class="nav-item" data-page="${item.id}" style="--ia:${a.m}">
-      <span class="nav-icon" style="background:${a.s}">${item.icon}</span>
+      <span class="nav-icon" style="background:rgba(255,255,255,0.16)">${item.icon}</span>
       <span class="nav-label">${item.label}</span>
     </div>`;
   }).join('');
@@ -893,6 +916,8 @@ function showToast(msg) {
 function openModal(type, editId) {
   const modal = document.getElementById('modalContent');
   modal.innerHTML = getFormHTML(type, editId);
+  pendingHealthDate = null;
+  pendingCdDate = null;
   document.getElementById('modalOverlay').classList.add('show');
 }
 
@@ -1038,7 +1063,7 @@ function getFormHTML(type, editId) {
     const d = existing || {};
     return `
       <div class="modal-title">${editId ? '编辑体感' : '记录体感'}</div>
-      <div class="form-group"><label class="form-label">日期</label><input class="form-input" id="f_date" type="date" value="${d.date||new Date().toISOString().slice(0,10)}"></div>
+      <div class="form-group"><label class="form-label">日期</label><input class="form-input" id="f_date" type="date" value="${pendingHealthDate || d.date || new Date().toISOString().slice(0,10)}"></div>
       <div class="form-group">
         <label class="form-label">整体感受</label>
         <div class="chip-group">
@@ -1131,7 +1156,7 @@ function getFormHTML(type, editId) {
       <div class="modal-title">${editId ? '编辑倒计时' : '添加倒计时'}</div>
       <div class="form-group"><label class="form-label">事件名称</label><input class="form-input" id="f_title" value="${d.title||''}" placeholder="如：我的生日、旅行出发、考试日"></div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">目标日期</label><input class="form-input" id="f_targetDate" type="date" value="${d.targetDate||''}"></div>
+        <div class="form-group"><label class="form-label">目标日期</label><input class="form-input" id="f_targetDate" type="date" value="${pendingCdDate || d.targetDate || ''}"></div>
         <div class="form-group"><label class="form-label">类型</label>
           <select class="form-select" id="f_countType">
             ${['倒数日','正数日'].map(c=>`<option value="${c}" ${d.countType===c?'selected':''}>${c}</option>`).join('')}
@@ -1669,6 +1694,13 @@ function renderHealth() {
   const periodEl = document.getElementById('periodWidget');
   const listEl = document.getElementById('healthList');
 
+  // 日历
+  if (!calState.health) { const n = new Date(); calState.health = { y: n.getFullYear(), m: n.getMonth() }; }
+  renderCalendar('healthCalendar', calState.health, {
+    marks: buildHealthMarks(list),
+    onPrev: 'healthPrevMonth()', onNext: 'healthNextMonth()', onSelect: 'selectHealthDate'
+  });
+
   // 生理期预测
   const periods = list.filter(x => x.isPeriod === '是').sort((a,b) => (a.date||'').localeCompare(b.date||''));
   if (periods.length > 0) {
@@ -1747,6 +1779,23 @@ function renderDashboard() {
       else monthIncome += item.amount;
     }
   });
+
+  // 今年剩余天数
+  const yrEl = document.getElementById('yearRemain');
+  if (yrEl) {
+    const nowY = now.getFullYear();
+    const yearStart = new Date(nowY, 0, 1);
+    const totalDays = (new Date(nowY, 11, 31) - yearStart) / 86400000 + 1;
+    const dayOfYear = Math.floor((now - yearStart) / 86400000) + 1;
+    const remain = totalDays - dayOfYear;
+    const pct = (dayOfYear / totalDays * 100).toFixed(1);
+    yrEl.innerHTML = `
+      <div>
+        <div class="yr-big">${remain}<span style="font-size:14px;font-weight:600;"> 天</span></div>
+        <div class="yr-sub">今年还剩 ${remain} 天 · 已过 ${dayOfYear} 天 / 共 ${totalDays} 天</div>
+      </div>
+      <div class="yr-bar"><div class="yr-fill" style="width:${pct}%"></div></div>`;
+  }
 
   const cities = new Set(travel.map(x => x.city));
   let sentValue = 0, receivedValue = 0;
@@ -2000,6 +2049,13 @@ function renderCountdown() {
   const today = new Date();
   today.setHours(0,0,0,0);
 
+  // 日历
+  if (!calState.countdown) { const n = new Date(); calState.countdown = { y: n.getFullYear(), m: n.getMonth() }; }
+  renderCalendar('countdownCalendar', calState.countdown, {
+    marks: buildCountdownMarks(list),
+    onPrev: 'cdPrevMonth()', onNext: 'cdNextMonth()', onSelect: 'selectCdDate'
+  });
+
   if (list.length === 0) {
     listEl.innerHTML = emptyState('暂无倒计时', '点击右上角添加你的第一个倒计时事件');
     return;
@@ -2080,6 +2136,76 @@ function emptyState(title, desc) {
 // ========================================
 // 初始化
 // ========================================
+// ========================================
+// 日历组件（通用）
+// ========================================
+const calState = { health: null, countdown: null };
+let pendingHealthDate = null;
+let pendingCdDate = null;
+
+function renderCalendar(targetId, state, opts) {
+  const c = document.getElementById(targetId);
+  if (!c) return;
+  const y = state.y, m = state.m;
+  const first = new Date(y, m, 1);
+  const startDay = (first.getDay() + 6) % 7; // 周一开头
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const prevDays = new Date(y, m, 0).getDate();
+  const cells = [];
+  for (let i = startDay - 1; i >= 0; i--) cells.push({ d: prevDays - i, other: true });
+  for (let d = 1; d <= daysInMonth; d++) cells.push({ d, other: false });
+  const tail = cells.length % 7 === 0 ? 0 : 7 - (cells.length % 7);
+  for (let i = 1; i <= tail; i++) cells.push({ d: i, other: true });
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const pad = n => String(n).padStart(2, '0');
+  let grid = '';
+  for (const cell of cells) {
+    if (cell.other) { grid += `<div class="cal-cell other">${cell.d}</div>`; continue; }
+    const ds = `${y}-${pad(m + 1)}-${pad(cell.d)}`;
+    const mark = opts.marks[ds];
+    const cls = ['cal-cell'];
+    if (ds === todayStr) cls.push('today');
+    if (mark) cls.push('marked');
+    const click = opts.onSelect ? `onclick="${opts.onSelect}('${ds}')"` : '';
+    const dot = mark ? `<span class="cal-dot">${mark.emoji || '•'}</span>` : '';
+    grid += `<div class="${cls.join(' ')}" ${click}>${cell.d}${dot}</div>`;
+  }
+  c.innerHTML = `
+    <div class="calendar">
+      <div class="cal-header">
+        <button class="cal-nav" onclick="${opts.onPrev}">‹</button>
+        <div class="cal-title">${y}年${m + 1}月</div>
+        <button class="cal-nav" onclick="${opts.onNext}">›</button>
+      </div>
+      <div class="cal-week">${['一','二','三','四','五','六','日'].map(w => `<span>${w}</span>`).join('')}</div>
+      <div class="cal-grid">${grid}</div>
+    </div>`;
+}
+
+function buildHealthMarks(list) {
+  const marks = {};
+  list.forEach(x => {
+    if (!x.date) return;
+    const m = marks[x.date] || (marks[x.date] = { emoji: '•', color: ACCENT_MAP.health.m });
+    if (x.isPeriod === '是') { m.emoji = '🌸'; m.color = '#E88A9A'; }
+  });
+  return marks;
+}
+
+function buildCountdownMarks(list) {
+  const marks = {};
+  list.forEach(x => { if (x.targetDate) marks[x.targetDate] = { emoji: x.emoji || '📌', color: ACCENT_MAP.countdown.m }; });
+  return marks;
+}
+
+function healthPrevMonth() { const s = calState.health; s.m--; if (s.m < 0) { s.m = 11; s.y--; } renderHealth(); }
+function healthNextMonth() { const s = calState.health; s.m++; if (s.m > 11) { s.m = 0; s.y++; } renderHealth(); }
+function selectHealthDate(ds) { pendingHealthDate = ds; openModal('health'); }
+
+function cdPrevMonth() { const s = calState.countdown; s.m--; if (s.m < 0) { s.m = 11; s.y--; } renderCountdown(); }
+function cdNextMonth() { const s = calState.countdown; s.m++; if (s.m > 11) { s.m = 0; s.y++; } renderCountdown(); }
+function selectCdDate(ds) { pendingCdDate = ds; openModal('countdown'); }
+
 initNav();
 
 // ========================================

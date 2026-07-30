@@ -21,6 +21,7 @@
   --nav-text-active: #5A3D3D;
   --accent: #E88A9A;
   --accent-light: #F5B5C0;
+  --accent-soft: #FBE9EE;
   --accent-mint: #A8D8B9;
   --accent-sky: #A0C4E8;
   --accent-cream: #F5DEB3;
@@ -107,14 +108,18 @@ html, body {
 }
 
 .nav-item:hover { background: rgba(232, 138, 154, 0.1); color: var(--accent); }
-.nav-item.active { background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 100%); color: white; box-shadow: 0 4px 12px rgba(232, 138, 154, 0.25); }
+.nav-item.active { background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 100%); color: white; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); }
 .nav-item.active .nav-icon { font-size: 22px; }
 
 .nav-item .nav-icon {
   font-size: 20px;
   line-height: 1;
   transition: all 0.2s;
+  border-radius: 12px;
+  padding: 4px 6px;
 }
+
+.nav-item.active .nav-icon { background: transparent !important; }
 
 .nav-item .nav-label {
   font-size: 11px;
@@ -201,7 +206,7 @@ html, body {
 }
 
 .btn-primary { background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 100%); color: white; }
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(232, 138, 154, 0.3); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14); }
 .btn-danger { background: linear-gradient(135deg, #F5B5B5 0%, #E88A8A 100%); color: white; }
 .btn-danger:hover { opacity: 0.85; }
 .btn-ghost { background: white; color: var(--text-light); border: 1.5px solid var(--border); box-shadow: none; }
@@ -523,7 +528,7 @@ html, body {
   color: var(--text-light);
   font-weight: 500;
 }
-.chip.active { background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 100%); color: white; border-color: var(--accent); box-shadow: 0 2px 8px rgba(232, 138, 154, 0.2); }
+.chip.active { background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 100%); color: white; border-color: var(--accent); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); }
 
 /* 照片网格 */
 .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin-top: 8px; }
@@ -725,6 +730,30 @@ const NAV_CONFIG = [
   { id: 'countdown', label: '天数倒计时', icon: '⏰' }
 ];
 
+// 每个板块的专属马卡龙配色（切换板块时全站主题色跟随变化）
+const ACCENT_MAP = {
+  dashboard: { m:'#E88A9A', l:'#F5B5C0', s:'#FBE9EE' }, // 樱粉
+  wardrobe:  { m:'#EF9BBB', l:'#F7C3D6', s:'#FCEAF1' }, // 玫粉
+  finance:   { m:'#5FC2A0', l:'#A8D8B9', s:'#E8F5EF' }, // 薄荷绿
+  travel:    { m:'#6FB3E8', l:'#A0C4E8', s:'#E9F3FC' }, // 天蓝
+  gift:      { m:'#C79BE6', l:'#DCC0EE', s:'#F4ECFB' }, // 薰衣草紫
+  health:    { m:'#56BFA0', l:'#8BC8A0', s:'#E4F5EE' }, // 青绿
+  weight:    { m:'#E8BE6A', l:'#F5DEB3', s:'#FBF5E6' }, // 奶黄
+  todo:      { m:'#E89B7E', l:'#F0B8A0', s:'#FBEDE7' }, // 珊瑚橙
+  countdown: { m:'#7AAEE0', l:'#A8C8E8', s:'#EBF3FC' }  // 湖蓝
+};
+
+// 应用板块主题色（动态改变全站 --accent 等变量）
+function applyAccent(pageId) {
+  const a = ACCENT_MAP[pageId] || ACCENT_MAP.dashboard;
+  const root = document.documentElement;
+  root.style.setProperty('--accent', a.m);
+  root.style.setProperty('--accent-light', a.l);
+  root.style.setProperty('--accent-soft', a.s);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', a.m);
+}
+
 // 读取/保存导航顺序（新增板块会自动追加到末尾）
 function getNavOrder() {
   let saved = [];
@@ -743,8 +772,9 @@ function renderNav() {
   navItems.innerHTML = order.map(id => {
     const item = NAV_CONFIG.find(n => n.id === id);
     if (!item) return '';
-    return `<div class="nav-item" data-page="${item.id}">
-      <span class="nav-icon">${item.icon}</span>
+    const a = ACCENT_MAP[id] || ACCENT_MAP.dashboard;
+    return `<div class="nav-item" data-page="${item.id}" style="--ia:${a.m}">
+      <span class="nav-icon" style="background:${a.s}">${item.icon}</span>
       <span class="nav-label">${item.label}</span>
     </div>`;
   }).join('');
@@ -828,6 +858,7 @@ function setupNavDrag() {
 }
 
 function switchPage(pageId) {
+  applyAccent(pageId);
   document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.page === pageId));
   document.querySelectorAll('.page').forEach(el => el.classList.toggle('active', el.id === 'page-' + pageId));
   // 渲染对应页面
@@ -1742,26 +1773,26 @@ function renderDashboard() {
   }
 
   document.getElementById('dashboardStats').innerHTML = `
-    <div class="stat-card" onclick="switchPage('wardrobe')" style="cursor:pointer;">
-      <div class="stat-label">衣橱</div><div class="stat-value" style="color:var(--accent)">${wardrobe.length}</div><div class="stat-label">件衣物</div>
+    <div class="stat-card" onclick="switchPage('wardrobe')" style="cursor:pointer;border-left:4px solid ${ACCENT_MAP.wardrobe.m};">
+      <div class="stat-label">衣橱</div><div class="stat-value" style="color:${ACCENT_MAP.wardrobe.m}">${wardrobe.length}</div><div class="stat-label">件衣物</div>
     </div>
-    <div class="stat-card" onclick="switchPage('finance')" style="cursor:pointer;">
-      <div class="stat-label">💰 本月支出</div><div class="stat-value" style="color:var(--danger)">¥${monthExpense.toFixed(0)}</div><div class="stat-label">收入 ¥${monthIncome.toFixed(0)}</div>
+    <div class="stat-card" onclick="switchPage('finance')" style="cursor:pointer;border-left:4px solid ${ACCENT_MAP.finance.m};">
+      <div class="stat-label">💰 本月支出</div><div class="stat-value" style="color:${ACCENT_MAP.finance.m}">¥${monthExpense.toFixed(0)}</div><div class="stat-label">收入 ¥${monthIncome.toFixed(0)}</div>
     </div>
-    <div class="stat-card" onclick="switchPage('travel')" style="cursor:pointer;">
-      <div class="stat-label">🗺️ 足迹</div><div class="stat-value" style="color:var(--accent-mint)">${cities.size}</div><div class="stat-label">座城市 · ${travel.length}次记录</div>
+    <div class="stat-card" onclick="switchPage('travel')" style="cursor:pointer;border-left:4px solid ${ACCENT_MAP.travel.m};">
+      <div class="stat-label">🗺️ 足迹</div><div class="stat-value" style="color:${ACCENT_MAP.travel.m}">${cities.size}</div><div class="stat-label">座城市 · ${travel.length}次记录</div>
     </div>
-    <div class="stat-card" onclick="switchPage('gift')" style="cursor:pointer;">
-      <div class="stat-label">🎁 礼尚</div><div class="stat-value" style="color:var(--accent-sky)">${gift.length}</div><div class="stat-label">送¥${sentValue.toFixed(0)} / 收¥${receivedValue.toFixed(0)}</div>
+    <div class="stat-card" onclick="switchPage('gift')" style="cursor:pointer;border-left:4px solid ${ACCENT_MAP.gift.m};">
+      <div class="stat-label">🎁 礼尚</div><div class="stat-value" style="color:${ACCENT_MAP.gift.m}">${gift.length}</div><div class="stat-label">送¥${sentValue.toFixed(0)} / 收¥${receivedValue.toFixed(0)}</div>
     </div>
-    <div class="stat-card" onclick="switchPage('health')" style="cursor:pointer;">
-      <div class="stat-label">🩺 体感</div><div class="stat-value" style="color:var(--warning)">${health.length}</div><div class="stat-label">${latestHealth ? latestHealth.feeling : '暂无'}</div>
+    <div class="stat-card" onclick="switchPage('health')" style="cursor:pointer;border-left:4px solid ${ACCENT_MAP.health.m};">
+      <div class="stat-label">🩺 体感</div><div class="stat-value" style="color:${ACCENT_MAP.health.m}">${health.length}</div><div class="stat-label">${latestHealth ? latestHealth.feeling : '暂无'}</div>
     </div>
-    <div class="stat-card" onclick="switchPage('weight')" style="cursor:pointer;">
-      <div class="stat-label">⚖️ 体重</div><div class="stat-value" style="color:var(--accent)">${latestWeight ? latestWeight.weight.toFixed(1) + 'kg' : '--'}</div><div class="stat-label">${latestWeight ? latestWeight.date.slice(5) : '暂无记录'}</div>
+    <div class="stat-card" onclick="switchPage('weight')" style="cursor:pointer;border-left:4px solid ${ACCENT_MAP.weight.m};">
+      <div class="stat-label">⚖️ 体重</div><div class="stat-value" style="color:${ACCENT_MAP.weight.m}">${latestWeight ? latestWeight.weight.toFixed(1) + 'kg' : '--'}</div><div class="stat-label">${latestWeight ? latestWeight.date.slice(5) : '暂无记录'}</div>
     </div>
-    <div class="stat-card" onclick="switchPage('todo')" style="cursor:pointer;">
-      <div class="stat-label">📝 待办</div><div class="stat-value" style="color:var(--accent-sky)">${pendingTodos.length}</div><div class="stat-label">待完成 · 今日${todayTodos.length}项</div>
+    <div class="stat-card" onclick="switchPage('todo')" style="cursor:pointer;border-left:4px solid ${ACCENT_MAP.todo.m};">
+      <div class="stat-label">📝 待办</div><div class="stat-value" style="color:${ACCENT_MAP.todo.m}">${pendingTodos.length}</div><div class="stat-label">待完成 · 今日${todayTodos.length}项</div>
     </div>
   `;
 

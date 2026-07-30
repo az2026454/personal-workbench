@@ -1,0 +1,2049 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="个人工作台">
+<meta name="theme-color" content="#5B4B8A">
+<meta name="mobile-web-app-capable" content="yes">
+<title>个人工作台</title>
+<style>
+/* ===== 清新女生风主题 ===== */
+:root {
+  --bg-main: #FAF5F0;
+  --nav-bg: #F5E6E0;
+  --nav-active: #F0A0B0;
+  --nav-text: #8B6F6F;
+  --nav-text-active: #5A3D3D;
+  --accent: #E88A9A;
+  --accent-light: #F5B5C0;
+  --accent-mint: #A8D8B9;
+  --accent-sky: #A0C4E8;
+  --accent-cream: #F5DEB3;
+  --card-bg: #FFFFFF;
+  --text-main: #5A3D3D;
+  --text-light: #9B8B8B;
+  --text-white: #FFFFFF;
+  --danger: #E88A8A;
+  --success: #8BC8A0;
+  --warning: #E8C070;
+  --border: #F0E0D8;
+  --shadow: 0 4px 20px rgba(232, 138, 154, 0.08);
+  --radius: 18px;
+  --nav-width: 120px;
+  --nav-width-expanded: 200px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-size: 14px;
+  overflow: hidden;
+}
+
+/* ===== 导航栏 ===== */
+.navbar {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: var(--nav-width);
+  background: linear-gradient(180deg, #FFF8F5 0%, #FAF0EC 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0 16px 0;
+  z-index: 100;
+  transition: width 0.3s ease;
+  box-shadow: 2px 0 16px rgba(232, 138, 154, 0.06);
+  border-right: 1px solid var(--border);
+}
+
+.nav-logo {
+  width: 50px; height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 100%);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 24px;
+  font-size: 20px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(232, 138, 154, 0.3);
+  font-weight: 700;
+}
+
+.nav-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  width: 100%;
+  align-items: center;
+  padding: 0 8px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.nav-item {
+  width: 100%;
+  min-height: 52px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s;
+  color: var(--nav-text);
+  position: relative;
+  padding: 6px 4px;
+  gap: 3px;
+  text-align: center;
+}
+
+.nav-item:hover { background: rgba(232, 138, 154, 0.1); color: var(--accent); }
+.nav-item.active { background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 100%); color: white; box-shadow: 0 4px 12px rgba(232, 138, 154, 0.25); }
+.nav-item.active .nav-icon { font-size: 22px; }
+
+.nav-item .nav-icon {
+  font-size: 20px;
+  line-height: 1;
+  transition: all 0.2s;
+}
+
+.nav-item .nav-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: inherit;
+  line-height: 1.3;
+}
+
+/* ===== 导航拖拽排序 ===== */
+.nav-items.sorting { touch-action: none; }
+.nav-item.dragging {
+  background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 100%);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(232, 138, 154, 0.5);
+  transform: scale(1.05);
+  z-index: 30;
+  opacity: 0.96;
+}
+.nav-item.dragging .nav-icon { font-size: 22px; }
+.nav-tip {
+  font-size: 9px;
+  color: var(--text-light);
+  text-align: center;
+  padding: 0 0 4px;
+  opacity: 0.7;
+  line-height: 1.3;
+}
+
+/* ===== 主内容区 ===== */
+.main-content {
+  margin-left: var(--nav-width);
+  height: 100vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.page { display: none; padding: 20px; }
+.page.active { display: block; animation: fadeIn 0.3s; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ===== 页面标题 ===== */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-title .page-icon {
+  width: 40px; height: 40px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 100%);
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-size: 20px;
+  box-shadow: 0 3px 10px rgba(232, 138, 154, 0.25);
+}
+
+/* ===== 按钮 ===== */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(232, 138, 154, 0.15);
+}
+
+.btn-primary { background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 100%); color: white; }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(232, 138, 154, 0.3); }
+.btn-danger { background: linear-gradient(135deg, #F5B5B5 0%, #E88A8A 100%); color: white; }
+.btn-danger:hover { opacity: 0.85; }
+.btn-ghost { background: white; color: var(--text-light); border: 1.5px solid var(--border); box-shadow: none; }
+.btn-ghost:hover { background: var(--bg-main); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+/* ===== 卡片 ===== */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+/* ===== 统计概览 ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px 12px;
+  box-shadow: var(--shadow);
+  text-align: center;
+  border: 1px solid var(--border);
+  transition: transform 0.2s;
+}
+.stat-card:hover { transform: translateY(-2px); }
+
+.stat-value { font-size: 22px; font-weight: 700; color: var(--accent); margin: 6px 0; }
+.stat-label { font-size: 11px; color: var(--text-light); font-weight: 500; }
+
+/* ===== 列表项 ===== */
+.list-item {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  position: relative;
+  border: 1px solid var(--border);
+}
+
+.list-item-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.list-item-body { flex: 1; min-width: 0; }
+.list-item-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; color: var(--text-main); }
+.list-item-desc { font-size: 12px; color: var(--text-light); line-height: 1.5; word-break: break-word; }
+.list-item-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+
+.tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(232, 138, 154, 0.12);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.tag.expense { background: rgba(232, 138, 138, 0.12); color: var(--danger); }
+.tag.income { background: rgba(139, 200, 160, 0.15); color: var(--success); }
+
+.delete-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(232, 138, 138, 0.1);
+  color: var(--danger);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  transition: all 0.2s;
+}
+.delete-btn:hover { background: var(--danger); color: white; }
+
+/* ===== 模态框 ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(90, 61, 61, 0.35);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(6px);
+}
+
+.modal-overlay.show { display: flex; animation: fadeIn 0.2s; }
+
+.modal {
+  background: white;
+  border-radius: 20px;
+  padding: 28px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(232, 138, 154, 0.15);
+  border: 1px solid var(--border);
+}
+
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--text-main); }
+
+/* ===== 表单 ===== */
+.form-group { margin-bottom: 14px; }
+.form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  color: var(--text-main);
+  transition: border 0.2s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.form-textarea { resize: vertical; min-height: 70px; }
+
+.form-row { display: flex; gap: 10px; }
+.form-row .form-group { flex: 1; }
+
+/* 图片上传 */
+.img-upload-area {
+  width: 100%;
+  height: 120px;
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+  background: var(--card-bg);
+}
+.img-upload-area img { width: 100%; height: 100%; object-fit: cover; }
+.img-upload-area .upload-placeholder { text-align: center; color: var(--text-light); font-size: 13px; }
+.img-upload-area .upload-placeholder svg { width: 28px; height: 28px; margin-bottom: 4px; }
+
+/* ===== 天气推荐卡片 ===== */
+.weather-card {
+  background: linear-gradient(135deg, #A0C4E8 0%, #E88A9A 100%);
+  border-radius: var(--radius);
+  padding: 22px;
+  color: white;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(160, 196, 232, 0.25);
+}
+
+.weather-info { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+.weather-icon { font-size: 42px; }
+.weather-temp { font-size: 36px; font-weight: 700; }
+.weather-desc { font-size: 13px; opacity: 0.9; }
+
+.weather-recommend {
+  background: rgba(255,255,255,0.2);
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  backdrop-filter: blur(4px);
+}
+
+.weather-recommend .rec-title { font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+
+/* ===== 空状态 ===== */
+.empty-state {
+  text-align: center;
+  padding: 50px 20px;
+  color: var(--text-light);
+}
+.empty-state svg { width: 56px; height: 56px; margin-bottom: 12px; opacity: 0.4; }
+.empty-state p { font-size: 14px; }
+
+/* ===== 时间线 ===== */
+.timeline { position: relative; padding-left: 24px; }
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+}
+.timeline-item { position: relative; margin-bottom: 16px; }
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: 6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--card-bg);
+}
+
+/* ===== 图表 ===== */
+.chart-container { position: relative; margin: 10px 0; }
+.pie-chart { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.pie-legend { flex: 1; min-width: 150px; }
+.legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px; }
+.legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+.bar-chart { margin-top: 10px; }
+.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12px; }
+.bar-label { width: 60px; text-align: right; color: var(--text-light); flex-shrink: 0; }
+.bar-track { flex: 1; height: 20px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; color: white; font-size: 11px; font-weight: 600; }
+
+/* ===== 生理期日历 ===== */
+.period-info {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.period-badge {
+  background: linear-gradient(135deg, #F5B5C0, #E88A9A);
+  color: white;
+  padding: 14px 16px;
+  border-radius: 14px;
+  flex: 1;
+  min-width: 140px;
+  text-align: center;
+  box-shadow: 0 3px 12px rgba(232, 138, 154, 0.2);
+}
+.period-badge .pb-value { font-size: 20px; font-weight: 700; }
+.period-badge .pb-label { font-size: 12px; opacity: 0.9; font-weight: 500; }
+
+/* ===== 响应式 ===== */
+@media (max-width: 600px) {
+  :root { --nav-width: 110px; }
+  .page { padding: 14px; }
+  .page-title { font-size: 18px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .list-item-img { width: 56px; height: 56px; }
+  .modal { padding: 18px; }
+  .nav-item { padding: 0 8px; margin: 0 4px; gap: 6px; }
+  .nav-item .nav-label { font-size: 12px; }
+  .nav-item { padding: 6px 2px; min-height: 58px; }
+  .nav-item .nav-icon { font-size: 18px; }
+  .nav-item .nav-label { font-size: 10px; }
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 100%);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 28px;
+  font-size: 13px;
+  z-index: 300;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(232, 138, 154, 0.3);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+.nav-items::-webkit-scrollbar { display: none; }
+.nav-items { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* 滚动条 */
+.main-content::-webkit-scrollbar { width: 5px; }
+.main-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* 多选标签 */
+.chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: white;
+  color: var(--text-light);
+  font-weight: 500;
+}
+.chip.active { background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 100%); color: white; border-color: var(--accent); box-shadow: 0 2px 8px rgba(232, 138, 154, 0.2); }
+
+/* 照片网格 */
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin-top: 8px; }
+.photo-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; }
+
+/* 强度条 */
+.intensity-bar { display: flex; gap: 4px; }
+.intensity-bar .bar { flex: 1; height: 24px; border-radius: 6px; background: var(--border); cursor: pointer; transition: all 0.2s; }
+.intensity-bar .bar.active { background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 100%); }
+.intensity-bar .bar.high { background: linear-gradient(135deg, #F5B5B5 0%, #E88A8A 100%); }
+
+</style>
+</head>
+<body>
+
+<!-- ===== 导航栏 ===== -->
+<nav class="navbar">
+  <div class="nav-logo">台</div>
+  <div class="nav-tip">长按拖动可排序 ↕</div>
+  <div class="nav-items" id="navItems">
+    <!-- JS动态生成 -->
+  </div>
+  <div class="nav-item" style="margin-top:auto;margin-bottom:8px;" onclick="clearAllData()">
+    <span class="nav-icon">🗑️</span>
+    <span class="nav-label">清除数据</span>
+  </div>
+</nav>
+
+<!-- ===== 主内容区 ===== -->
+<div class="main-content">
+
+  <!-- 0. 总工作台 -->
+  <div class="page" id="page-dashboard">
+    <div class="page-header">
+      <div class="page-title">
+        <span class="page-icon">🏠</span>
+        总工作台
+      </div>
+      <div style="font-size:13px;color:var(--text-light);" id="dashDate"></div>
+    </div>
+    <div class="stats-grid" id="dashboardStats"></div>
+    <div class="card" id="dashboardRecent"></div>
+    <div id="weatherWidget"></div>
+  </div>
+
+  <!-- 1. 电子衣橱 -->
+  <div class="page" id="page-wardrobe">
+    <div class="page-header">
+      <div class="page-title">
+        <span class="page-icon">👗</span>
+        电子衣橱
+      </div>
+      <button class="btn btn-primary" onclick="openModal('wardrobe')">+ 添加衣物</button>
+    </div>
+    <div id="weatherWidget"></div>
+    <div id="wardrobeList"></div>
+  </div>
+
+  <!-- 2. 记账存钱 -->
+  <div class="page" id="page-finance">
+    <div class="page-header">
+      <div class="page-title">
+        <span class="page-icon">💰</span>
+        记账存钱
+      </div>
+      <button class="btn btn-primary" onclick="openModal('finance')">+ 记一笔</button>
+    </div>
+    <div class="stats-grid" id="financeStats"></div>
+    <div class="card" id="financeChart"></div>
+    <div id="financeList"></div>
+  </div>
+
+  <!-- 3. 沿途印记 -->
+  <div class="page" id="page-travel">
+    <div class="page-header">
+      <div class="page-title">
+        <span class="page-icon">🗺️</span>
+        沿途印记
+      </div>
+      <button class="btn btn-primary" onclick="openModal('travel')">+ 记录足迹</button>
+    </div>
+    <div class="stats-grid" id="travelStats"></div>
+    <div id="travelList"></div>
+  </div>
+
+  <!-- 4. 礼尚往来 -->
+  <div class="page" id="page-gift">
+    <div class="page-header">
+      <div class="page-title">
+        <span class="page-icon">🎁</span>
+        礼尚往来
+      </div>
+      <button class="btn btn-primary" onclick="openModal('gift')">+ 记录礼物</button>
+    </div>
+    <div class="stats-grid" id="giftStats"></div>
+    <div id="giftList"></div>
+  </div>
+
+  <!-- 5. 体感实录 -->
+  <div class="page" id="page-health">
+    <div class="page-header">
+      <div class="page-title">
+        <span class="page-icon">🩺</span>
+        体感实录
+      </div>
+      <button class="btn btn-primary" onclick="openModal('health')">+ 记录体感</button>
+    </div>
+    <div id="periodWidget"></div>
+    <div id="healthList"></div>
+  </div>
+
+  <!-- 6. 体重管理 -->
+  <div class="page" id="page-weight">
+    <div class="page-header">
+      <div class="page-title">
+        <span class="page-icon">⚖️</span>
+        体重管理
+      </div>
+      <button class="btn btn-primary" onclick="openModal('weight')">+ 记录体重</button>
+    </div>
+    <div class="stats-grid" id="weightStats"></div>
+    <div class="card" id="weightChart"></div>
+    <div id="weightList"></div>
+  </div>
+
+  <!-- 7. 待办事项 -->
+  <div class="page" id="page-todo">
+    <div class="page-header">
+      <div class="page-title">
+        <span class="page-icon">📝</span>
+        待办事项
+      </div>
+      <button class="btn btn-primary" onclick="openModal('todo')">+ 添加待办</button>
+    </div>
+    <div class="stats-grid" id="todoStats"></div>
+    <div id="todoList"></div>
+  </div>
+
+  <!-- 8. 天数倒计时 -->
+  <div class="page" id="page-countdown">
+    <div class="page-header">
+      <div class="page-title">
+        <span class="page-icon">⏰</span>
+        天数倒计时
+      </div>
+      <button class="btn btn-primary" onclick="openModal('countdown')">+ 添加倒计时</button>
+    </div>
+    <div id="countdownList"></div>
+  </div>
+
+</div>
+
+<!-- ===== 模态框 ===== -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalContent">
+    <!-- JS动态生成 -->
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ========================================
+// 数据层 - localStorage CRUD
+// ========================================
+const DB = {
+  get(key) {
+    try { return JSON.parse(localStorage.getItem('pw_' + key)) || []; }
+    catch(e) { return []; }
+  },
+  set(key, val) { localStorage.setItem('pw_' + key, JSON.stringify(val)); },
+  add(key, item) {
+    const list = this.get(key);
+    item.id = Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+    item.createdAt = new Date().toISOString();
+    list.unshift(item);
+    this.set(key, list);
+    return item;
+  },
+  delete(key, id) {
+    const list = this.get(key).filter(x => x.id !== id);
+    this.set(key, list);
+  }
+};
+
+// ========================================
+// 导航配置
+// ========================================
+const NAV_CONFIG = [
+  { id: 'dashboard', label: '总工作台', icon: '🏠' },
+  { id: 'wardrobe', label: '电子衣橱', icon: '👗' },
+  { id: 'finance', label: '记账存钱', icon: '💰' },
+  { id: 'travel', label: '沿途印记', icon: '🗺️' },
+  { id: 'gift', label: '礼尚往来', icon: '🎁' },
+  { id: 'health', label: '体感实录', icon: '🩺' },
+  { id: 'weight', label: '体重管理', icon: '⚖️' },
+  { id: 'todo', label: '待办事项', icon: '📝' },
+  { id: 'countdown', label: '天数倒计时', icon: '⏰' }
+];
+
+// 读取/保存导航顺序（新增板块会自动追加到末尾）
+function getNavOrder() {
+  let saved = [];
+  try { saved = JSON.parse(localStorage.getItem('pw_navOrder')) || []; } catch (e) {}
+  const allIds = NAV_CONFIG.map(n => n.id);
+  const valid = saved.filter(id => allIds.includes(id));
+  const missing = allIds.filter(id => !valid.includes(id));
+  return valid.concat(missing);
+}
+function saveNavOrder(ids) { localStorage.setItem('pw_navOrder', JSON.stringify(ids)); }
+
+// 按保存顺序渲染导航
+function renderNav() {
+  const navItems = document.getElementById('navItems');
+  const order = getNavOrder();
+  navItems.innerHTML = order.map(id => {
+    const item = NAV_CONFIG.find(n => n.id === id);
+    if (!item) return '';
+    return `<div class="nav-item" data-page="${item.id}">
+      <span class="nav-icon">${item.icon}</span>
+      <span class="nav-label">${item.label}</span>
+    </div>`;
+  }).join('');
+  setupNavDrag();
+}
+
+// 初始化导航
+function initNav() {
+  renderNav();
+  switchPage('dashboard');
+}
+
+// 长按拖动排序（手机 + 桌面通用，基于 Pointer Events）
+function setupNavDrag() {
+  const navItems = document.getElementById('navItems');
+  const LONG_PRESS = 400;   // 长按触发阈值(ms)
+  const MOVE_CANCEL = 12;   // 未达长按前移动超过此值视为滚动/误触
+
+  navItems.querySelectorAll('.nav-item').forEach(el => {
+    el.addEventListener('pointerdown', onDown);
+  });
+
+  function onDown(e) {
+    const el = e.currentTarget;
+    if (el.classList.contains('dragging')) return;
+    const startX = e.clientX, startY = e.clientY;
+    let draggingEl = el, isDragging = false, pressTimer = null;
+
+    try { el.setPointerCapture(e.pointerId); } catch (_) {}
+
+    const onMove = (ev) => {
+      const dx = ev.clientX - startX, dy = ev.clientY - startY;
+      if (!isDragging) {
+        if (Math.hypot(dx, dy) > MOVE_CANCEL) { clearTimeout(pressTimer); cleanup(); }
+        return;
+      }
+      ev.preventDefault();
+      const sibs = [...navItems.querySelectorAll('.nav-item:not(.dragging)')];
+      for (const sib of sibs) {
+        const sr = sib.getBoundingClientRect();
+        const sibMid = sr.top + sr.height / 2;
+        const sibAfter = el.compareDocumentPosition(sib) & Node.DOCUMENT_POSITION_FOLLOWING;
+        if (sibAfter && ev.clientY < sibMid) { navItems.insertBefore(el, sib); break; }
+        if (!sibAfter && ev.clientY > sibMid) { navItems.insertBefore(el, sib.nextSibling); break; }
+      }
+    };
+
+    const onUp = () => {
+      clearTimeout(pressTimer);
+      if (isDragging) {
+        el.classList.remove('dragging');
+        navItems.classList.remove('sorting');
+        const ids = [...navItems.querySelectorAll('.nav-item')].map(n => n.dataset.page);
+        saveNavOrder(ids);
+        showToast('导航顺序已保存 ✓');
+      } else if (el.dataset.page) {
+        switchPage(el.dataset.page);
+      }
+      cleanup();
+    };
+
+    const cleanup = () => {
+      clearTimeout(pressTimer);
+      el.removeEventListener('pointermove', onMove);
+      el.removeEventListener('pointerup', onUp);
+      el.removeEventListener('pointercancel', onUp);
+      try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+    };
+
+    pressTimer = setTimeout(() => {
+      isDragging = true;
+      navItems.classList.add('sorting');
+      el.classList.add('dragging');
+      showToast('拖动调整顺序，松手保存');
+    }, LONG_PRESS);
+
+    el.addEventListener('pointermove', onMove);
+    el.addEventListener('pointerup', onUp);
+    el.addEventListener('pointercancel', onUp);
+  }
+}
+
+function switchPage(pageId) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.page === pageId));
+  document.querySelectorAll('.page').forEach(el => el.classList.toggle('active', el.id === 'page-' + pageId));
+  // 渲染对应页面
+  if (pageId === 'dashboard') renderDashboard();
+  else if (pageId === 'wardrobe') { renderWardrobe(); renderWeather(); }
+  else if (pageId === 'finance') renderFinance();
+  else if (pageId === 'travel') renderTravel();
+  else if (pageId === 'gift') renderGift();
+  else if (pageId === 'health') renderHealth();
+  else if (pageId === 'weight') renderWeight();
+  else if (pageId === 'todo') renderTodo();
+  else if (pageId === 'countdown') renderCountdown();
+}
+
+// ========================================
+// Toast
+// ========================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ========================================
+// 模态框
+// ========================================
+function openModal(type, editId) {
+  const modal = document.getElementById('modalContent');
+  modal.innerHTML = getFormHTML(type, editId);
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+
+document.getElementById('modalOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'modalOverlay') closeModal();
+});
+
+// ========================================
+// 表单HTML生成
+// ========================================
+function getFormHTML(type, editId) {
+  let existing = null;
+  if (editId) existing = DB.get(type).find(x => x.id === editId);
+
+  if (type === 'wardrobe') {
+    const d = existing || {};
+    return `
+      <div class="modal-title">${editId ? '编辑衣物' : '添加衣物'}</div>
+      <div class="form-group">
+        <label class="form-label">衣物照片</label>
+        <div class="img-upload-area" onclick="document.getElementById('wardrobePhoto').click()">
+          ${d.photo ? `<img src="${d.photo}" />` : '<div class="upload-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><div>点击上传照片</div></div>'}
+        </div>
+        <input type="file" id="wardrobePhoto" accept="image/*" style="display:none" onchange="handleImageUpload(this, 'wardrobePhotoPreview')">
+        <input type="hidden" id="f_photo" value="${d.photo || ''}">
+      </div>
+      <div class="form-group"><label class="form-label">名称</label><input class="form-input" id="f_name" value="${d.name||''}" placeholder="如：白色棉质T恤"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">类别</label>
+          <select class="form-select" id="f_category">
+            ${['上装','下装','外套','鞋','配饰'].map(c=>`<option value="${c}" ${d.category===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">颜色</label><input class="form-input" id="f_color" value="${d.color||''}" placeholder="如：白色"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">季节</label>
+          <select class="form-select" id="f_season">
+            ${['春季','夏季','秋季','冬季','四季'].map(s=>`<option value="${s}" ${d.season===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">品牌</label><input class="form-input" id="f_brand" value="${d.brand||''}" placeholder="选填"></div>
+      </div>
+      <div class="form-group"><label class="form-label">备注</label><textarea class="form-textarea" id="f_note">${d.note||''}</textarea></div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" style="flex:1" onclick="saveWardrobe('${editId||''}')">保存</button>
+      </div>
+    `;
+  }
+
+  if (type === 'finance') {
+    const d = existing || {};
+    return `
+      <div class="modal-title">${editId ? '编辑记录' : '记一笔'}</div>
+      <div class="form-group">
+        <label class="form-label">类型</label>
+        <div class="chip-group">
+          ${['支出','收入'].map((t,i)=>`<div class="chip ${d.type===t||( !d.type&&i===0)?'active':''}" onclick="selectChip(this,'f_type','${t}')">${t}</div>`).join('')}
+        </div>
+        <input type="hidden" id="f_type" value="${d.type||'支出'}">
+      </div>
+      <div class="form-group"><label class="form-label">金额（元）</label><input class="form-input" id="f_amount" type="number" step="0.01" value="${d.amount||''}" placeholder="0.00"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">分类</label>
+          <select class="form-select" id="f_category">
+            ${['餐饮','购物','转账','交通','娱乐','工资','红包','其他'].map(c=>`<option value="${c}" ${d.category===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">日期</label><input class="form-input" id="f_date" type="date" value="${d.date||new Date().toISOString().slice(0,10)}"></div>
+      </div>
+      <div class="form-group"><label class="form-label">备注</label><textarea class="form-textarea" id="f_note">${d.note||''}</textarea></div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" style="flex:1" onclick="saveFinance('${editId||''}')">保存</button>
+      </div>
+    `;
+  }
+
+  if (type === 'travel') {
+    const d = existing || {};
+    return `
+      <div class="modal-title">${editId ? '编辑足迹' : '记录足迹'}</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">城市</label><input class="form-input" id="f_city" value="${d.city||''}" placeholder="如：杭州"></div>
+        <div class="form-group"><label class="form-label">地点</label><input class="form-input" id="f_place" value="${d.place||''}" placeholder="如：西湖"></div>
+      </div>
+      <div class="form-group"><label class="form-label">日期</label><input class="form-input" id="f_date" type="date" value="${d.date||new Date().toISOString().slice(0,10)}"></div>
+      <div class="form-group"><label class="form-label">体验感受</label><textarea class="form-textarea" id="f_experience" placeholder="记录你的出行体验...">${d.experience||''}</textarea></div>
+      <div class="form-group">
+        <label class="form-label">照片（可多张）</label>
+        <div class="img-upload-area" onclick="document.getElementById('travelPhotos').click()">
+          <div class="upload-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><div>点击上传照片</div></div>
+        </div>
+        <input type="file" id="travelPhotos" accept="image/*" multiple style="display:none" onchange="handleMultiImageUpload(this)">
+        <div class="photo-grid" id="photoPreview">${(d.photos||[]).map(p=>`<img src="${p}">`).join('')}</div>
+        <input type="hidden" id="f_photos" value='${JSON.stringify(d.photos||[])}'>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" style="flex:1" onclick="saveTravel('${editId||''}')">保存</button>
+      </div>
+    `;
+  }
+
+  if (type === 'gift') {
+    const d = existing || {};
+    return `
+      <div class="modal-title">${editId ? '编辑礼物' : '记录礼物'}</div>
+      <div class="form-group">
+        <label class="form-label">方向</label>
+        <div class="chip-group">
+          ${['送出','收到'].map(t=>`<div class="chip ${d.direction===t||(!d.direction&&t==='送出')?'active':''}" onclick="selectChip(this,'f_direction','${t}')">${t}</div>`).join('')}
+        </div>
+        <input type="hidden" id="f_direction" value="${d.direction||'送出'}">
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">对方姓名</label><input class="form-input" id="f_person" value="${d.person||''}" placeholder="如：小王"></div>
+        <div class="form-group"><label class="form-label">礼物名称</label><input class="form-input" id="f_giftName" value="${d.giftName||''}" placeholder="如：茶叶礼盒"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">场合</label>
+          <select class="form-select" id="f_occasion">
+            ${['生日','节日','拜访','感谢','婚礼','其他'].map(c=>`<option value="${c}" ${d.occasion===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">价值（元）</label><input class="form-input" id="f_value" type="number" step="0.01" value="${d.value||''}" placeholder="0.00"></div>
+      </div>
+      <div class="form-group"><label class="form-label">日期</label><input class="form-input" id="f_date" type="date" value="${d.date||new Date().toISOString().slice(0,10)}"></div>
+      <div class="form-group"><label class="form-label">备注</label><textarea class="form-textarea" id="f_note">${d.note||''}</textarea></div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" style="flex:1" onclick="saveGift('${editId||''}')">保存</button>
+      </div>
+    `;
+  }
+
+  if (type === 'health') {
+    const d = existing || {};
+    return `
+      <div class="modal-title">${editId ? '编辑体感' : '记录体感'}</div>
+      <div class="form-group"><label class="form-label">日期</label><input class="form-input" id="f_date" type="date" value="${d.date||new Date().toISOString().slice(0,10)}"></div>
+      <div class="form-group">
+        <label class="form-label">整体感受</label>
+        <div class="chip-group">
+          ${['很好','良好','一般','不佳','很差'].map((t,i)=>`<div class="chip ${d.feeling===t||(!d.feeling&&i===1)?'active':''}" onclick="selectChip(this,'f_feeling','${t}')">${t}</div>`).join('')}
+        </div>
+        <input type="hidden" id="f_feeling" value="${d.feeling||'良好'}">
+      </div>
+      <div class="form-group"><label class="form-label">不适部位</label><input class="form-input" id="f_discomfort" value="${d.discomfort||''}" placeholder="如：头痛、肩颈酸痛"></div>
+      <div class="form-group">
+        <label class="form-label">不适强度 (1-10)</label>
+        <div class="intensity-bar" id="intensityBar">
+          ${Array.from({length:10},(_,i)=>`<div class="bar ${d.intensity&&i<d.intensity?'active':''} ${d.intensity&&i>=6?'high':''}" data-val="${i+1}" onclick="selectIntensity(${i+1})"></div>`).join('')}
+        </div>
+        <input type="hidden" id="f_intensity" value="${d.intensity||0}">
+      </div>
+      <div class="form-group"><label class="form-label">症状描述</label><textarea class="form-textarea" id="f_symptom" placeholder="详细描述症状...">${d.symptom||''}</textarea></div>
+      <div class="form-group">
+        <label class="form-label">是否生理期</label>
+        <div class="chip-group">
+          ${['否','是'].map((t,i)=>`<div class="chip ${d.isPeriod===t||(d.isPeriod===undefined&&i===0)?'active':''}" onclick="selectChip(this,'f_isPeriod','${t}')">${t}</div>`).join('')}
+        </div>
+        <input type="hidden" id="f_isPeriod" value="${d.isPeriod||'否'}">
+      </div>
+      <div class="form-group"><label class="form-label">备注</label><textarea class="form-textarea" id="f_note">${d.note||''}</textarea></div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" style="flex:1" onclick="saveHealth('${editId||''}')">保存</button>
+      </div>
+    `;
+  }
+
+  if (type === 'weight') {
+    const d = existing || {};
+    return `
+      <div class="modal-title">${editId ? '编辑记录' : '记录体重'}</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">日期</label><input class="form-input" id="f_date" type="date" value="${d.date||new Date().toISOString().slice(0,10)}"></div>
+        <div class="form-group"><label class="form-label">体重（kg）</label><input class="form-input" id="f_weight" type="number" step="0.1" value="${d.weight||''}" placeholder="如：55.0"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">身高（cm）</label><input class="form-input" id="f_height" type="number" step="0.1" value="${d.height||''}" placeholder="如：165（仅首次填写）"></div>
+        <div class="form-group"><label class="form-label">体脂率（% 选填）</label><input class="form-input" id="f_bodyFat" type="number" step="0.1" value="${d.bodyFat||''}" placeholder="选填"></div>
+      </div>
+      <div class="form-group"><label class="form-label">备注</label><textarea class="form-textarea" id="f_note" placeholder="如：晨起空腹">${d.note||''}</textarea></div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" style="flex:1" onclick="saveWeight('${editId||''}')">保存</button>
+      </div>
+    `;
+  }
+
+  if (type === 'todo') {
+    const d = existing || {};
+    return `
+      <div class="modal-title">${editId ? '编辑待办' : '添加待办'}</div>
+      <div class="form-group"><label class="form-label">待办内容</label><input class="form-input" id="f_content" value="${d.content||''}" placeholder="如：去超市买菜"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">优先级</label>
+          <div class="chip-group">
+            ${['高','中','低'].map((t,i)=>`<div class="chip ${d.priority===t||(!d.priority&&i===1)?'active':''}" onclick="selectChip(this,'f_priority','${t}')">${t}</div>`).join('')}
+          </div>
+          <input type="hidden" id="f_priority" value="${d.priority||'中'}">
+        </div>
+        <div class="form-group"><label class="form-label">分类</label>
+          <select class="form-select" id="f_category">
+            ${['生活','工作','学习','购物','健康','其他'].map(c=>`<option value="${c}" ${d.category===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">截止日期</label><input class="form-input" id="f_deadline" type="date" value="${d.deadline||''}"></div>
+        <div class="form-group"><label class="form-label">状态</label>
+          <div class="chip-group">
+            ${['未完成','已完成'].map((t,i)=>`<div class="chip ${d.status===t||(!d.status&&i===0)?'active':''}" onclick="selectChip(this,'f_status','${t}')">${t}</div>`).join('')}
+          </div>
+          <input type="hidden" id="f_status" value="${d.status||'未完成'}">
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">备注</label><textarea class="form-textarea" id="f_note" placeholder="详细说明...">${d.note||''}</textarea></div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" style="flex:1" onclick="saveTodo('${editId||''}')">保存</button>
+      </div>
+    `;
+  }
+
+  if (type === 'countdown') {
+    const d = existing || {};
+    return `
+      <div class="modal-title">${editId ? '编辑倒计时' : '添加倒计时'}</div>
+      <div class="form-group"><label class="form-label">事件名称</label><input class="form-input" id="f_title" value="${d.title||''}" placeholder="如：我的生日、旅行出发、考试日"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">目标日期</label><input class="form-input" id="f_targetDate" type="date" value="${d.targetDate||''}"></div>
+        <div class="form-group"><label class="form-label">类型</label>
+          <select class="form-select" id="f_countType">
+            ${['倒数日','正数日'].map(c=>`<option value="${c}" ${d.countType===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">图标 emoji</label><input class="form-input" id="f_emoji" value="${d.emoji||'🎉'}" placeholder="如：🎂 🎄 ✈️"></div>
+      <div class="form-group"><label class="form-label">备注</label><textarea class="form-textarea" id="f_note" placeholder="补充说明...">${d.note||''}</textarea></div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" style="flex:1" onclick="saveCountdown('${editId||''}')">保存</button>
+      </div>
+    `;
+  }
+}
+
+// Chip选择
+function selectChip(el, hiddenId, val) {
+  el.parentNode.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(hiddenId).value = val;
+}
+
+// 强度选择
+function selectIntensity(val) {
+  document.getElementById('f_intensity').value = val;
+  const bars = document.querySelectorAll('#intensityBar .bar');
+  bars.forEach((bar, i) => {
+    bar.classList.remove('active', 'high');
+    if (i < val) {
+      bar.classList.add('active');
+      if (i >= 6) bar.classList.add('high');
+    }
+  });
+}
+
+// 图片上传处理
+function handleImageUpload(input, previewId) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById('f_photo').value = e.target.result;
+    const area = input.closest('.img-upload-area');
+    area.innerHTML = `<img src="${e.target.result}" />`;
+  };
+  reader.readAsDataURL(file);
+}
+
+// 多图上传
+let tempPhotos = [];
+function handleMultiImageUpload(input) {
+  tempPhotos = JSON.parse(document.getElementById('f_photos').value || '[]');
+  const files = Array.from(input.files);
+  let loaded = 0;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      tempPhotos.push(e.target.result);
+      loaded++;
+      if (loaded === files.length) {
+        document.getElementById('f_photos').value = JSON.stringify(tempPhotos);
+        document.getElementById('photoPreview').innerHTML = tempPhotos.map(p=>`<img src="${p}">`).join('');
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ========================================
+// 保存函数
+// ========================================
+function saveWardrobe(editId) {
+  const name = document.getElementById('f_name').value.trim();
+  if (!name) { showToast('请输入衣物名称'); return; }
+  const data = {
+    photo: document.getElementById('f_photo').value,
+    name,
+    category: document.getElementById('f_category').value,
+    color: document.getElementById('f_color').value.trim(),
+    season: document.getElementById('f_season').value,
+    brand: document.getElementById('f_brand').value.trim(),
+    note: document.getElementById('f_note').value.trim()
+  };
+  if (editId) {
+    const list = DB.get('wardrobe');
+    const idx = list.findIndex(x => x.id === editId);
+    if (idx > -1) { list[idx] = { ...list[idx], ...data }; DB.set('wardrobe', list); }
+  } else { DB.add('wardrobe', data); }
+  closeModal();
+  renderWardrobe();
+  showToast('保存成功');
+}
+
+function saveFinance(editId) {
+  const amount = parseFloat(document.getElementById('f_amount').value);
+  if (!amount || amount <= 0) { showToast('请输入有效金额'); return; }
+  const data = {
+    type: document.getElementById('f_type').value,
+    amount,
+    category: document.getElementById('f_category').value,
+    date: document.getElementById('f_date').value,
+    note: document.getElementById('f_note').value.trim()
+  };
+  if (editId) {
+    const list = DB.get('finance');
+    const idx = list.findIndex(x => x.id === editId);
+    if (idx > -1) { list[idx] = { ...list[idx], ...data }; DB.set('finance', list); }
+  } else { DB.add('finance', data); }
+  closeModal();
+  renderFinance();
+  showToast('保存成功');
+}
+
+function saveTravel(editId) {
+  const city = document.getElementById('f_city').value.trim();
+  if (!city) { showToast('请输入城市'); return; }
+  const data = {
+    city,
+    place: document.getElementById('f_place').value.trim(),
+    date: document.getElementById('f_date').value,
+    experience: document.getElementById('f_experience').value.trim(),
+    photos: JSON.parse(document.getElementById('f_photos').value || '[]')
+  };
+  if (editId) {
+    const list = DB.get('travel');
+    const idx = list.findIndex(x => x.id === editId);
+    if (idx > -1) { list[idx] = { ...list[idx], ...data }; DB.set('travel', list); }
+  } else { DB.add('travel', data); }
+  closeModal();
+  renderTravel();
+  showToast('保存成功');
+}
+
+function saveGift(editId) {
+  const person = document.getElementById('f_person').value.trim();
+  if (!person) { showToast('请输入对方姓名'); return; }
+  const data = {
+    direction: document.getElementById('f_direction').value,
+    person,
+    giftName: document.getElementById('f_giftName').value.trim(),
+    occasion: document.getElementById('f_occasion').value,
+    value: parseFloat(document.getElementById('f_value').value) || 0,
+    date: document.getElementById('f_date').value,
+    note: document.getElementById('f_note').value.trim()
+  };
+  if (editId) {
+    const list = DB.get('gift');
+    const idx = list.findIndex(x => x.id === editId);
+    if (idx > -1) { list[idx] = { ...list[idx], ...data }; DB.set('gift', list); }
+  } else { DB.add('gift', data); }
+  closeModal();
+  renderGift();
+  showToast('保存成功');
+}
+
+function saveHealth(editId) {
+  const data = {
+    date: document.getElementById('f_date').value,
+    feeling: document.getElementById('f_feeling').value,
+    discomfort: document.getElementById('f_discomfort').value.trim(),
+    intensity: parseInt(document.getElementById('f_intensity').value) || 0,
+    symptom: document.getElementById('f_symptom').value.trim(),
+    isPeriod: document.getElementById('f_isPeriod').value,
+    note: document.getElementById('f_note').value.trim()
+  };
+  if (editId) {
+    const list = DB.get('health');
+    const idx = list.findIndex(x => x.id === editId);
+    if (idx > -1) { list[idx] = { ...list[idx], ...data }; DB.set('health', list); }
+  } else { DB.add('health', data); }
+  closeModal();
+  renderHealth();
+  showToast('保存成功');
+}
+
+function saveWeight(editId) {
+  const weight = parseFloat(document.getElementById('f_weight').value);
+  if (!weight || weight <= 0) { showToast('请输入有效体重'); return; }
+  const data = {
+    date: document.getElementById('f_date').value,
+    weight,
+    height: parseFloat(document.getElementById('f_height').value) || 0,
+    bodyFat: parseFloat(document.getElementById('f_bodyFat').value) || 0,
+    note: document.getElementById('f_note').value.trim()
+  };
+  if (editId) {
+    const list = DB.get('weight');
+    const idx = list.findIndex(x => x.id === editId);
+    if (idx > -1) { list[idx] = { ...list[idx], ...data }; DB.set('weight', list); }
+  } else { DB.add('weight', data); }
+  closeModal();
+  renderWeight();
+  showToast('保存成功');
+}
+
+function saveTodo(editId) {
+  const content = document.getElementById('f_content').value.trim();
+  if (!content) { showToast('请输入待办内容'); return; }
+  const data = {
+    content,
+    priority: document.getElementById('f_priority').value,
+    category: document.getElementById('f_category').value,
+    deadline: document.getElementById('f_deadline').value,
+    status: document.getElementById('f_status').value,
+    note: document.getElementById('f_note').value.trim()
+  };
+  if (editId) {
+    const list = DB.get('todo');
+    const idx = list.findIndex(x => x.id === editId);
+    if (idx > -1) { list[idx] = { ...list[idx], ...data }; DB.set('todo', list); }
+  } else { DB.add('todo', data); }
+  closeModal();
+  renderTodo();
+  showToast('保存成功');
+}
+
+function saveCountdown(editId) {
+  const title = document.getElementById('f_title').value.trim();
+  const targetDate = document.getElementById('f_targetDate').value;
+  if (!title) { showToast('请输入事件名称'); return; }
+  if (!targetDate) { showToast('请选择目标日期'); return; }
+  const data = {
+    title,
+    targetDate,
+    countType: document.getElementById('f_countType').value,
+    emoji: document.getElementById('f_emoji').value.trim() || '🎉',
+    note: document.getElementById('f_note').value.trim()
+  };
+  if (editId) {
+    const list = DB.get('countdown');
+    const idx = list.findIndex(x => x.id === editId);
+    if (idx > -1) { list[idx] = { ...list[idx], ...data }; DB.set('countdown', list); }
+  } else { DB.add('countdown', data); }
+  closeModal();
+  renderCountdown();
+  showToast('保存成功');
+}
+
+// ========================================
+// 删除函数
+// ========================================
+function deleteItem(type, id) {
+  if (!confirm('确定删除这条记录吗？')) return;
+  DB.delete(type, id);
+  if (type === 'wardrobe') renderWardrobe();
+  else if (type === 'finance') renderFinance();
+  else if (type === 'travel') renderTravel();
+  else if (type === 'gift') renderGift();
+  else if (type === 'health') renderHealth();
+  else if (type === 'weight') renderWeight();
+  else if (type === 'todo') renderTodo();
+  else if (type === 'countdown') renderCountdown();
+  showToast('已删除');
+}
+
+// ========================================
+// 渲染：电子衣橱
+// ========================================
+function renderWardrobe() {
+  const list = DB.get('wardrobe');
+  const container = document.getElementById('wardrobeList');
+  if (list.length === 0) {
+    container.innerHTML = emptyState('衣橱还是空的', '点击右上角添加你的第一件衣物');
+    return;
+  }
+  // 按类别分组
+  const categories = {};
+  list.forEach(item => {
+    if (!categories[item.category]) categories[item.category] = [];
+    categories[item.category].push(item);
+  });
+  container.innerHTML = Object.entries(categories).map(([cat, items]) => `
+    <div class="card">
+      <div class="card-header"><strong>${cat}</strong> <span class="tag">${items.length}件</span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;">
+        ${items.map(item => `
+          <div style="position:relative;cursor:pointer;" onclick="openModal('wardrobe','${item.id}')">
+            <img src="${item.photo || ''}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;background:var(--border);" onerror="this.style.display='none'">
+            <div style="font-size:12px;font-weight:600;margin-top:4px;text-align:center;">${item.name}</div>
+            <div style="font-size:11px;color:var(--text-light);text-align:center;">${item.color||''} · ${item.season||''}</div>
+            <button class="delete-btn" style="top:2px;right:2px;width:22px;height:22px;font-size:13px;" onclick="event.stopPropagation();deleteItem('wardrobe','${item.id}')">×</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ========================================
+// 天气推荐
+// ========================================
+async function renderWeather() {
+  const widget = document.getElementById('weatherWidget');
+  widget.innerHTML = '<div class="weather-card"><div style="opacity:0.8;font-size:13px;">正在获取天气信息...</div></div>';
+  try {
+    const resp = await fetch('https://wttr.in/?format=j1');
+    const data = await resp.json();
+    const current = data.current_condition[0];
+    const temp = parseInt(current.temp_C);
+    const desc = current.weatherDesc[0].value;
+    const icon = getWeatherIcon(current.weatherCode);
+    const recommend = getOutfitRecommendation(temp, desc);
+    const wardrobe = DB.get('wardrobe');
+
+    widget.innerHTML = `
+      <div class="weather-card">
+        <div class="weather-info">
+          <div class="weather-icon">${icon}</div>
+          <div>
+            <div class="weather-temp">${temp}°C</div>
+            <div class="weather-desc">${desc} · ${current.humidity}%湿度</div>
+          </div>
+        </div>
+        <div class="weather-recommend">
+          <div class="rec-title">👗 今日穿搭推荐</div>
+          <div>${recommend}</div>
+          ${wardrobe.length > 0 ? `<div style="margin-top:8px;font-size:12px;opacity:0.8;">💡 从衣橱中挑选合适的搭配，点击衣物可查看详情</div>` : '<div style="margin-top:8px;font-size:12px;opacity:0.8;">💡 添加衣物后可获得个性化推荐</div>'}
+        </div>
+      </div>
+    `;
+  } catch(e) {
+    widget.innerHTML = `
+      <div class="weather-card">
+        <div class="weather-info">
+          <div class="weather-icon">🌤️</div>
+          <div>
+            <div class="weather-temp" style="font-size:18px;">天气获取失败</div>
+            <div class="weather-desc">请检查网络连接</div>
+          </div>
+        </div>
+        <div class="weather-recommend">
+          <div class="rec-title">👗 通用穿搭建议</div>
+          <div>可根据季节选择合适衣物，关注当日气温变化灵活搭配。</div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function getWeatherIcon(code) {
+  code = parseInt(code);
+  if (code === 113) return '☀️';
+  if (code === 116) return '⛅';
+  if ([119,122,143,179,182,185].includes(code)) return '☁️';
+  if ([200,201].includes(code)) return '🌫️';
+  if ([227,230,311,314,317,320,323,326,329,332,335,338,350,353,356,359,362,365,368,371,374,377,386,389,392,395,398].includes(code)) return '🌧️';
+  if ([248,260,263,266,281,284,293,296,299,302,305,308].includes(code)) return '🌦️';
+  if ([179,182,185,227,230,320,323,326,329,332,335,338,368,371,374,377,392,395,398].includes(code)) return '🌨️';
+  if ([200,386,389].includes(code)) return '⛈️';
+  return '🌤️';
+}
+
+function getOutfitRecommendation(temp, desc) {
+  if (temp >= 30) return '炎热天气，建议穿短袖、短裤、连衣裙等轻薄透气的衣物，注意防晒，可搭配遮阳帽。';
+  if (temp >= 25) return '温暖舒适，适合穿短袖、薄长袖、薄裤或裙装，外出可备一件薄外套。';
+  if (temp >= 20) return '气温宜人，建议穿长袖衬衫、薄卫衣搭配长裤，舒适透气。';
+  if (temp >= 15) return '微凉天气，建议穿卫衣、薄毛衣搭配长裤，早晚可加一件薄外套。';
+  if (temp >= 10) return '较凉天气，建议穿毛衣、夹克或风衣，搭配长裤，注意保暖。';
+  if (temp >= 5) return '寒冷天气，建议穿厚毛衣、羽绒服或棉服，搭配保暖裤，围巾手套不可少。';
+  if (temp >= 0) return '严寒天气，建议穿厚羽绒服、保暖内衣，全副武装注意防寒。';
+  return '极寒天气，务必穿最厚的羽绒服、保暖内衣、毛衣多层穿搭，注意防风防寒。';
+}
+
+// ========================================
+// 渲染：记账存钱
+// ========================================
+function renderFinance() {
+  const list = DB.get('finance');
+  const statsEl = document.getElementById('financeStats');
+  const chartEl = document.getElementById('financeChart');
+  const listEl = document.getElementById('financeList');
+
+  const now = new Date();
+  const ym = now.toISOString().slice(0,7);
+
+  let totalExpense = 0, totalIncome = 0, monthExpense = 0, monthIncome = 0;
+  const catStats = {};
+  list.forEach(item => {
+    if (item.type === '支出') {
+      totalExpense += item.amount;
+      if (item.date && item.date.slice(0,7) === ym) monthExpense += item.amount;
+      catStats[item.category] = (catStats[item.category] || 0) + item.amount;
+    } else {
+      totalIncome += item.amount;
+      if (item.date && item.date.slice(0,7) === ym) monthIncome += item.amount;
+    }
+  });
+
+  statsEl.innerHTML = `
+    <div class="stat-card"><div class="stat-label">本月支出</div><div class="stat-value" style="color:var(--danger)">¥${monthExpense.toFixed(2)}</div></div>
+    <div class="stat-card"><div class="stat-label">本月收入</div><div class="stat-value" style="color:var(--success)">¥${monthIncome.toFixed(2)}</div></div>
+    <div class="stat-card"><div class="stat-label">累计支出</div><div class="stat-value" style="color:var(--accent)">¥${totalExpense.toFixed(2)}</div></div>
+    <div class="stat-card"><div class="stat-label">累计收入</div><div class="stat-value" style="color:var(--accent-mint)">¥${totalIncome.toFixed(2)}</div></div>
+  `;
+
+  // 分类图表
+  const sortedCats = Object.entries(catStats).sort((a,b) => b[1]-a[1]);
+  const maxVal = sortedCats.length > 0 ? sortedCats[0][1] : 1;
+  const colors = ['#E88A9A','#A0C4E8','#A8D8B9','#E8C070','#D4A5D4','#8BC8A0','#F5B5C0','#B0C4DE'];
+  chartEl.innerHTML = `
+    <div class="card-header"><strong>支出分类统计</strong></div>
+    ${sortedCats.length === 0 ? '<div style="color:var(--text-light);text-align:center;padding:10px;">暂无支出数据</div>' :
+      sortedCats.map(([cat, val], i) => `
+        <div class="bar-row">
+          <div class="bar-label">${cat}</div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${(val/maxVal*100).toFixed(0)}%;background:${colors[i%colors.length]};">¥${val.toFixed(0)}</div>
+          </div>
+        </div>
+      `).join('')
+    }
+  `;
+
+  // 列表
+  if (list.length === 0) {
+    listEl.innerHTML = emptyState('暂无记账记录', '点击右上角开始记一笔');
+    return;
+  }
+  listEl.innerHTML = list.map(item => `
+    <div class="list-item" onclick="openModal('finance','${item.id}')" style="cursor:pointer;">
+      <div class="list-item-body">
+        <div class="list-item-title">${item.category} <span class="tag ${item.type==='支出'?'expense':'income'}">${item.type}</span></div>
+        <div class="list-item-desc">${item.note || '无备注'} · ${item.date}</div>
+      </div>
+      <div style="font-weight:700;color:${item.type==='支出'?'var(--danger)':'var(--success)'};font-size:16px;white-space:nowrap;">
+        ${item.type==='支出'?'-':'+'}¥${item.amount.toFixed(2)}
+      </div>
+      <button class="delete-btn" onclick="event.stopPropagation();deleteItem('finance','${item.id}')">×</button>
+    </div>
+  `).join('');
+}
+
+// ========================================
+// 渲染：沿途印记
+// ========================================
+function renderTravel() {
+  const list = DB.get('travel');
+  const statsEl = document.getElementById('travelStats');
+  const listEl = document.getElementById('travelList');
+
+  const cities = new Set(list.map(x => x.city));
+  statsEl.innerHTML = `
+    <div class="stat-card"><div class="stat-label">去过的城市</div><div class="stat-value" style="color:var(--accent-mint)">${cities.size}</div></div>
+    <div class="stat-card"><div class="stat-label">足迹记录</div><div class="stat-value" style="color:var(--accent-sky)">${list.length}</div></div>
+    <div class="stat-card"><div class="stat-label">照片数量</div><div class="stat-value" style="color:var(--accent)">${list.reduce((s,x)=>s+(x.photos?x.photos.length:0),0)}</div></div>
+  `;
+
+  if (list.length === 0) {
+    listEl.innerHTML = emptyState('还没有足迹记录', '点击右上角记录你的第一次出行');
+    return;
+  }
+
+  // 按时间排序（新到旧）
+  const sorted = [...list].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+
+  listEl.innerHTML = `<div class="timeline">` + sorted.map(item => `
+    <div class="timeline-item">
+      <div class="card" onclick="openModal('travel','${item.id}')" style="cursor:pointer;">
+        <div class="card-header">
+          <strong>📍 ${item.city}${item.place ? ' · ' + item.place : ''}</strong>
+          <span class="tag">${item.date || ''}</span>
+        </div>
+        ${item.experience ? `<div style="font-size:13px;color:var(--text-light);line-height:1.6;margin-bottom:8px;">${item.experience}</div>` : ''}
+        ${item.photos && item.photos.length > 0 ? `<div class="photo-grid">${item.photos.map(p=>`<img src="${p}" onclick="event.stopPropagation();this.requestFullscreen&&this.requestFullscreen()">`).join('')}</div>` : ''}
+        <button class="delete-btn" onclick="event.stopPropagation();deleteItem('travel','${item.id}')">×</button>
+      </div>
+    </div>
+  `).join('') + `</div>`;
+}
+
+// ========================================
+// 渲染：礼尚往来
+// ========================================
+function renderGift() {
+  const list = DB.get('gift');
+  const statsEl = document.getElementById('giftStats');
+  const listEl = document.getElementById('giftList');
+
+  let sentCount = 0, receivedCount = 0, sentValue = 0, receivedValue = 0;
+  list.forEach(item => {
+    if (item.direction === '送出') { sentCount++; sentValue += item.value || 0; }
+    else { receivedCount++; receivedValue += item.value || 0; }
+  });
+  const balance = sentValue - receivedValue;
+
+  statsEl.innerHTML = `
+    <div class="stat-card"><div class="stat-label">送出礼物</div><div class="stat-value" style="color:var(--accent)">${sentCount}件</div><div class="stat-label">¥${sentValue.toFixed(0)}</div></div>
+    <div class="stat-card"><div class="stat-label">收到礼物</div><div class="stat-value" style="color:var(--accent-mint)">${receivedCount}件</div><div class="stat-label">¥${receivedValue.toFixed(0)}</div></div>
+    <div class="stat-card"><div class="stat-label">往来差额</div><div class="stat-value" style="color:${balance > 0 ? 'var(--danger)' : balance < 0 ? 'var(--success)' : 'var(--accent)'}">${balance > 0 ? '多送出' : balance < 0 ? '多收到' : '平衡'}¥${Math.abs(balance).toFixed(0)}</div></div>
+    <div class="stat-card"><div class="stat-label">记录总数</div><div class="stat-value" style="color:var(--accent-sky)">${list.length}</div></div>
+  `;
+
+  if (list.length === 0) {
+    listEl.innerHTML = emptyState('暂无礼物记录', '点击右上角记录礼尚往来');
+    return;
+  }
+
+  // 按人分组
+  const byPerson = {};
+  list.forEach(item => {
+    if (!byPerson[item.person]) byPerson[item.person] = [];
+    byPerson[item.person].push(item);
+  });
+
+  listEl.innerHTML = Object.entries(byPerson).map(([person, gifts]) => {
+    const pSent = gifts.filter(g=>g.direction==='送出').reduce((s,g)=>s+(g.value||0),0);
+    const pReceived = gifts.filter(g=>g.direction==='收到').reduce((s,g)=>s+(g.value||0),0);
+    return `
+      <div class="card">
+        <div class="card-header">
+          <strong>👤 ${person}</strong>
+          <span class="tag">送${pSent.toFixed(0)} / 收${pReceived.toFixed(0)}</span>
+        </div>
+        ${gifts.map(g => `
+          <div class="list-item" style="box-shadow:none;background:transparent;margin-bottom:6px;padding:8px 0;border-bottom:1px solid var(--border);" onclick="openModal('gift','${g.id}')" on>
+            <div class="list-item-body">
+              <div class="list-item-title">${g.giftName} <span class="tag ${g.direction==='送出'?'expense':'income'}">${g.direction}</span></div>
+              <div class="list-item-desc">${g.occasion} · ${g.date} ${g.note ? ' · ' + g.note : ''}</div>
+            </div>
+            <div style="font-weight:600;color:var(--accent);white-space:nowrap;">¥${(g.value||0).toFixed(0)}</div>
+            <button class="delete-btn" onclick="event.stopPropagation();deleteItem('gift','${g.id}')">×</button>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }).join('');
+}
+
+// ========================================
+// 渲染：体感实录
+// ========================================
+function renderHealth() {
+  const list = DB.get('health');
+  const periodEl = document.getElementById('periodWidget');
+  const listEl = document.getElementById('healthList');
+
+  // 生理期预测
+  const periods = list.filter(x => x.isPeriod === '是').sort((a,b) => (a.date||'').localeCompare(b.date||''));
+  if (periods.length > 0) {
+    const lastPeriod = periods[periods.length - 1];
+    const lastDate = new Date(lastPeriod.date);
+    const cycleDays = periods.length > 1 ? Math.round((new Date(lastPeriod.date) - new Date(periods[periods.length-2].date)) / 86400000) : 28;
+    const nextDate = new Date(lastDate.getTime() + cycleDays * 86400000);
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const daysUntil = Math.round((nextDate - today) / 86400000);
+
+    periodEl.innerHTML = `
+      <div class="period-info">
+        <div class="period-badge">
+          <div class="pb-label">上次生理期</div>
+          <div class="pb-value">${lastPeriod.date.slice(5)}</div>
+        </div>
+        <div class="period-badge">
+          <div class="pb-label">预测周期</div>
+          <div class="pb-value">${cycleDays}天</div>
+        </div>
+        <div class="period-badge">
+          <div class="pb-label">${daysUntil >= 0 ? '预计下次' : '已过'}</div>
+          <div class="pb-value">${daysUntil >= 0 ? daysUntil + '天后' : Math.abs(daysUntil) + '天前'}</div>
+        </div>
+      </div>
+    `;
+  } else {
+    periodEl.innerHTML = '';
+  }
+
+  if (list.length === 0) {
+    listEl.innerHTML = emptyState('暂无体感记录', '点击右上角记录你的身体状况');
+    return;
+  }
+
+  const feelingColors = { '很好': 'var(--success)', '良好': 'var(--accent-mint)', '一般': 'var(--warning)', '不佳': '#D4A5A5', '很差': 'var(--danger)' };
+
+  listEl.innerHTML = list.map(item => `
+    <div class="list-item" onclick="openModal('health','${item.id}')" style="cursor:pointer;">
+      <div class="list-item-body">
+        <div class="list-item-title">
+          ${item.date}
+          <span class="tag" style="background:${feelingColors[item.feeling]||'var(--accent)'}20;color:${feelingColors[item.feeling]||'var(--accent)'}">${item.feeling}</span>
+          ${item.isPeriod === '是' ? '<span class="tag" style="background:#F5B5C020;color:#E88A9A">🌸 生理期</span>' : ''}
+        </div>
+        ${item.discomfort ? `<div class="list-item-desc">不适部位：${item.discomfort}${item.intensity ? ` · 强度${item.intensity}/10` : ''}</div>` : ''}
+        ${item.symptom ? `<div class="list-item-desc">症状：${item.symptom}</div>` : ''}
+        ${item.note ? `<div class="list-item-desc">备注：${item.note}</div>` : ''}
+      </div>
+      <button class="delete-btn" onclick="event.stopPropagation();deleteItem('health','${item.id}')">×</button>
+    </div>
+  `).join('');
+}
+
+// ========================================
+// 渲染：总工作台
+// ========================================
+function renderDashboard() {
+  const wardrobe = DB.get('wardrobe');
+  const finance = DB.get('finance');
+  const travel = DB.get('travel');
+  const gift = DB.get('gift');
+  const health = DB.get('health');
+  const weight = DB.get('weight');
+  const todo = DB.get('todo');
+
+  const now = new Date();
+  const ym = now.toISOString().slice(0,7);
+  const dashDate = document.getElementById('dashDate');
+  if (dashDate) dashDate.textContent = now.toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  let monthExpense = 0, monthIncome = 0;
+  finance.forEach(item => {
+    if (item.date && item.date.slice(0,7) === ym) {
+      if (item.type === '支出') monthExpense += item.amount;
+      else monthIncome += item.amount;
+    }
+  });
+
+  const cities = new Set(travel.map(x => x.city));
+  let sentValue = 0, receivedValue = 0;
+  gift.forEach(item => {
+    if (item.direction === '送出') sentValue += item.value || 0;
+    else receivedValue += item.value || 0;
+  });
+
+  // 最新体重
+  const sortedWeight = [...weight].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const latestWeight = sortedWeight.length > 0 ? sortedWeight[0] : null;
+  // 最新体感
+  const sortedHealth = [...health].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const latestHealth = sortedHealth.length > 0 ? sortedHealth[0] : null;
+  // 待办统计
+  const pendingTodos = todo.filter(x => x.status !== '已完成');
+  const today = now.toISOString().slice(0,10);
+  const todayTodos = pendingTodos.filter(x => x.deadline === today);
+  // 生理期天数
+  const periods = health.filter(x => x.isPeriod === '是').sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  let periodInfo = '';
+  if (periods.length > 0) {
+    const last = periods[periods.length-1];
+    const cycleDays = periods.length > 1 ? Math.round((new Date(last.date) - new Date(periods[periods.length-2].date)) / 86400000) : 28;
+    const nextDate = new Date(new Date(last.date).getTime() + cycleDays * 86400000);
+    const daysUntil = Math.round((nextDate - now) / 86400000);
+    periodInfo = `${daysUntil >= 0 ? daysUntil + '天后' : Math.abs(daysUntil) + '天前'}`;
+  }
+
+  document.getElementById('dashboardStats').innerHTML = `
+    <div class="stat-card" onclick="switchPage('wardrobe')" style="cursor:pointer;">
+      <div class="stat-label">衣橱</div><div class="stat-value" style="color:var(--accent)">${wardrobe.length}</div><div class="stat-label">件衣物</div>
+    </div>
+    <div class="stat-card" onclick="switchPage('finance')" style="cursor:pointer;">
+      <div class="stat-label">💰 本月支出</div><div class="stat-value" style="color:var(--danger)">¥${monthExpense.toFixed(0)}</div><div class="stat-label">收入 ¥${monthIncome.toFixed(0)}</div>
+    </div>
+    <div class="stat-card" onclick="switchPage('travel')" style="cursor:pointer;">
+      <div class="stat-label">🗺️ 足迹</div><div class="stat-value" style="color:var(--accent-mint)">${cities.size}</div><div class="stat-label">座城市 · ${travel.length}次记录</div>
+    </div>
+    <div class="stat-card" onclick="switchPage('gift')" style="cursor:pointer;">
+      <div class="stat-label">🎁 礼尚</div><div class="stat-value" style="color:var(--accent-sky)">${gift.length}</div><div class="stat-label">送¥${sentValue.toFixed(0)} / 收¥${receivedValue.toFixed(0)}</div>
+    </div>
+    <div class="stat-card" onclick="switchPage('health')" style="cursor:pointer;">
+      <div class="stat-label">🩺 体感</div><div class="stat-value" style="color:var(--warning)">${health.length}</div><div class="stat-label">${latestHealth ? latestHealth.feeling : '暂无'}</div>
+    </div>
+    <div class="stat-card" onclick="switchPage('weight')" style="cursor:pointer;">
+      <div class="stat-label">⚖️ 体重</div><div class="stat-value" style="color:var(--accent)">${latestWeight ? latestWeight.weight.toFixed(1) + 'kg' : '--'}</div><div class="stat-label">${latestWeight ? latestWeight.date.slice(5) : '暂无记录'}</div>
+    </div>
+    <div class="stat-card" onclick="switchPage('todo')" style="cursor:pointer;">
+      <div class="stat-label">📝 待办</div><div class="stat-value" style="color:var(--accent-sky)">${pendingTodos.length}</div><div class="stat-label">待完成 · 今日${todayTodos.length}项</div>
+    </div>
+  `;
+
+  // 近期摘要
+  let recentHTML = '<div class="card-header"><strong>📋 近期动态</strong></div>';
+  const allRecent = [];
+  wardrobe.slice(0,3).forEach(x => allRecent.push({text:`添加了衣物「${x.name}」`,date:x.createdAt,page:'wardrobe'}));
+  finance.slice(0,3).forEach(x => allRecent.push({text:`${x.type==='支出'?'支出':'收入'} ¥${x.amount.toFixed(2)} · ${x.category}`,date:x.createdAt,page:'finance'}));
+  travel.slice(0,3).forEach(x => allRecent.push({text:`到访 ${x.city}${x.place?' · '+x.place:''}`,date:x.createdAt,page:'travel'}));
+  gift.slice(0,3).forEach(x => allRecent.push({text:`${x.direction}「${x.giftName}」给 ${x.person}`,date:x.createdAt,page:'gift'}));
+  health.slice(0,3).forEach(x => allRecent.push({text:`体感${x.feeling}${x.isPeriod==='是'?' · 生理期':''}`,date:x.createdAt,page:'health'}));
+  weight.slice(0,3).forEach(x => allRecent.push({text:`体重 ${x.weight.toFixed(1)}kg`,date:x.createdAt,page:'weight'}));
+  todo.slice(0,3).forEach(x => allRecent.push({text:`${x.status==='已完成'?'✅':'📝'} ${x.content}`,date:x.createdAt,page:'todo'}));
+  allRecent.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  const topRecent = allRecent.slice(0,8);
+  if (topRecent.length === 0) {
+    recentHTML += '<div style="color:var(--text-light);text-align:center;padding:16px;">暂无动态，开始记录你的生活吧 ✨</div>';
+  } else {
+    recentHTML += topRecent.map(r => {
+      const d = r.date ? new Date(r.date).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+      return `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;display:flex;justify-content:space-between;"><span>${r.text}</span><span style="color:var(--text-light);font-size:12px;">${d}</span></div>`;
+    }).join('');
+  }
+  document.getElementById('dashboardRecent').innerHTML = recentHTML;
+
+  // 生理期提醒
+  if (periodInfo) {
+    const existing = document.getElementById('periodWidget');
+    if (!existing) {
+      document.getElementById('dashboardRecent').insertAdjacentHTML('beforebegin', '<div id="periodWidget"></div>');
+    }
+    document.getElementById('periodWidget').innerHTML = `
+      <div class="period-info" style="margin-top:12px;">
+        <div class="period-badge"><div class="pb-label">🌸 预计下次生理期</div><div class="pb-value">${periodInfo}</div></div>
+      </div>
+    `;
+  }
+
+  renderWeather();
+}
+
+// ========================================
+// 渲染：体重管理
+// ========================================
+function renderWeight() {
+  const list = DB.get('weight').sort((a,b) => (a.date||'').localeCompare(b.date||''));
+  const statsEl = document.getElementById('weightStats');
+  const chartEl = document.getElementById('weightChart');
+  const listEl = document.getElementById('weightList');
+
+  if (list.length === 0) {
+    statsEl.innerHTML = '';
+    chartEl.innerHTML = '';
+    listEl.innerHTML = emptyState('暂无体重记录', '点击右上角开始记录你的体重');
+    return;
+  }
+
+  const first = list[0];
+  const last = list[list.length - 1];
+  const change = last.weight - first.weight;
+  const height = list.find(x=>x.height>0)?.height || last.height || 0;
+  const bmi = height > 0 ? (last.weight / ((height/100) ** 2)).toFixed(1) : null;
+
+  statsEl.innerHTML = `
+    <div class="stat-card"><div class="stat-label">当前体重</div><div class="stat-value" style="color:var(--accent)">${last.weight.toFixed(1)} kg</div></div>
+    <div class="stat-card"><div class="stat-label">体重变化</div><div class="stat-value" style="color:${change>0?'var(--danger)':change<0?'var(--success)':'var(--accent)'}">${change>0?'+':''}${change.toFixed(1)} kg</div></div>
+    <div class="stat-card"><div class="stat-label">${bmi ? 'BMI指数' : '目标体重'}</div><div class="stat-value" style="color:var(--accent-sky)">${bmi || '--'}</div><div class="stat-label">${bmi ? (bmi<18.5?'偏瘦':bmi<24?'正常':bmi<28?'偏胖':'肥胖') : ''}</div></div>
+    <div class="stat-card"><div class="stat-label">记录次数</div><div class="stat-value" style="color:var(--accent-mint)">${list.length}</div></div>
+  `;
+
+  // 折线图（SVG）
+  if (list.length >= 2) {
+    const minW = Math.min(...list.map(x=>x.weight)) - 1;
+    const maxW = Math.max(...list.map(x=>x.weight)) + 1;
+    const range = maxW - minW || 1;
+    const totalW = list.length - 1;
+
+    const polyline = list.map((x,i) => {
+      const cx = 30 + (i / totalW) * 70;
+      const cy = 180 - 20 - ((x.weight - minW) / range) * 140;
+      return `${cx},${cy}`;
+    }).join(' ');
+
+    const dots = list.map((x,i) => {
+      const cx = 30 + (i / totalW) * 70;
+      const cy = 180 - 20 - ((x.weight - minW) / range) * 140;
+      return `<circle cx="${cx}" cy="${cy}" r="3.5" fill="var(--accent)"/><text x="${cx}" y="${cy-10}" text-anchor="middle" font-size="9" fill="var(--text-light)">${x.weight.toFixed(1)}</text>`;
+    }).join('');
+
+    const dateLabels = list.filter((_,i) => i===0 || i===list.length-1 || i===Math.floor(totalW/2)).map(x => x.date.slice(5)).join(' · ');
+
+    chartEl.innerHTML = `
+      <div class="card-header"><strong>📈 体重趋势</strong><span class="tag">${list[0].date.slice(0,4)} ~ ${list[list.length-1].date.slice(0,4)}</span></div>
+      <div style="padding:10px 0;">
+        <svg viewBox="0 0 100 200" style="width:100%;max-height:220px;">
+          <line x1="28" y1="15" x2="28" y2="180" stroke="var(--border)" stroke-width="1"/>
+          <line x1="28" y1="180" x2="95" y2="180" stroke="var(--border)" stroke-width="1"/>
+          <polyline points="${polyline}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          ${dots}
+        </svg>
+      </div>
+      <div style="text-align:center;font-size:11px;color:var(--text-light);">${dateLabels}</div>
+    `;
+  } else {
+    chartEl.innerHTML = '';
+  }
+
+  listEl.innerHTML = [...list].reverse().map((item, ri) => {
+    const origIdx = list.findIndex(x => x.id === item.id);
+    const prev = origIdx > 0 ? list[origIdx - 1] : null;
+    const diff = prev ? (item.weight - prev.weight).toFixed(1) : null;
+    return `
+      <div class="list-item" onclick="openModal('weight','${item.id}')" style="cursor:pointer;">
+        <div class="list-item-body">
+          <div class="list-item-title">${item.date} · ${item.weight.toFixed(1)} kg ${diff !== null ? `<span style="color:${diff>0?'var(--danger)':diff<0?'var(--success)':'var(--text-light)'};font-size:12px;">${diff>0?'+':''}${diff}kg</span>` : ''}</div>
+          <div class="list-item-desc">${item.bodyFat ? `体脂率 ${item.bodyFat}% · ` : ''}${item.note || '无备注'}</div>
+        </div>
+        <button class="delete-btn" onclick="event.stopPropagation();deleteItem('weight','${item.id}')">×</button>
+      </div>
+    `;
+  }).join('');
+}
+
+// ========================================
+// 渲染：待办事项
+// ========================================
+function renderTodo() {
+  const list = DB.get('todo');
+  const statsEl = document.getElementById('todoStats');
+  const listEl = document.getElementById('todoList');
+
+  const pending = list.filter(x => x.status !== '已完成');
+  const done = list.filter(x => x.status === '已完成');
+  const today = new Date().toISOString().slice(0,10);
+  const todayTodos = pending.filter(x => x.deadline === today);
+  const overdue = pending.filter(x => x.deadline && x.deadline < today);
+
+  statsEl.innerHTML = `
+    <div class="stat-card"><div class="stat-label">待完成</div><div class="stat-value" style="color:var(--warning)">${pending.length}</div></div>
+    <div class="stat-card"><div class="stat-label">今日待办</div><div class="stat-value" style="color:var(--accent)">${todayTodos.length}</div></div>
+    <div class="stat-card"><div class="stat-label">已逾期</div><div class="stat-value" style="color:var(--danger)">${overdue.length}</div></div>
+    <div class="stat-card"><div class="stat-label">已完成</div><div class="stat-value" style="color:var(--accent-mint)">${done.length}</div></div>
+  `;
+
+  if (list.length === 0) {
+    listEl.innerHTML = emptyState('暂无待办事项', '点击右上角添加你的第一个待办');
+    return;
+  }
+
+  const priorityOrder = { '高': 0, '中': 1, '低': 2 };
+  const sorted = [...list].sort((a,b) => {
+    if (a.status === '已完成' && b.status !== '已完成') return 1;
+    if (a.status !== '已完成' && b.status === '已完成') return -1;
+    const pa = priorityOrder[a.priority] || 1;
+    const pb = priorityOrder[b.priority] || 1;
+    if (pa !== pb) return pa - pb;
+    return (a.deadline||'').localeCompare(b.deadline||'');
+  });
+
+  const priorityColors = { '高': 'var(--danger)', '中': 'var(--warning)', '低': 'var(--accent-mint)' };
+
+  listEl.innerHTML = sorted.map(item => `
+    <div class="list-item" style="opacity:${item.status==='已完成'?'0.6':'1'}">
+      <div style="width:32px;height:32px;border-radius:50%;border:2px solid ${item.status==='已完成'?'var(--accent-mint)':'var(--border)'};display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:2px;transition:all 0.2s;background:${item.status==='已完成'?'var(--accent-mint)':'white'};color:white;font-weight:700;"
+        onclick="toggleTodo('${item.id}')">
+        ${item.status==='已完成'?'✓':''}
+      </div>
+      <div class="list-item-body" onclick="openModal('todo','${item.id}')" style="cursor:pointer;">
+        <div class="list-item-title" style="text-decoration:${item.status==='已完成'?'line-through':'none'};">
+          ${item.content}
+          <span class="tag" style="color:${priorityColors[item.priority]||'var(--accent)'};background:${priorityColors[item.priority]||'var(--accent)'}15;">${item.priority}优先</span>
+          <span class="tag">${item.category}</span>
+        </div>
+        <div class="list-item-desc">
+          ${item.deadline ? '📅 ' + item.deadline + (item.deadline<today && item.status!=='已完成'?' ⚠️已逾期':'') : '无截止日期'}
+          ${item.note ? ' · ' + item.note : ''}
+        </div>
+      </div>
+      <button class="delete-btn" onclick="event.stopPropagation();deleteItem('todo','${item.id}')">×</button>
+    </div>
+  `).join('');
+}
+
+// 切换待办状态
+function toggleTodo(id) {
+  const list = DB.get('todo');
+  const item = list.find(x => x.id === id);
+  if (item) {
+    item.status = item.status === '已完成' ? '未完成' : '已完成';
+    DB.set('todo', list);
+    renderTodo();
+  }
+}
+
+// ========================================
+// 渲染：天数倒计时
+// ========================================
+function renderCountdown() {
+  const list = DB.get('countdown');
+  const listEl = document.getElementById('countdownList');
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  if (list.length === 0) {
+    listEl.innerHTML = emptyState('暂无倒计时', '点击右上角添加你的第一个倒计时事件');
+    return;
+  }
+
+  const sorted = [...list].sort((a,b) => {
+    const da = Math.abs(new Date(a.targetDate) - today);
+    const db = Math.abs(new Date(b.targetDate) - today);
+    return da - db;
+  });
+
+  listEl.innerHTML = sorted.map(item => {
+    const target = new Date(item.targetDate);
+    target.setHours(0,0,0,0);
+    const diffMs = target - today;
+    const diffDays = Math.round(diffMs / 86400000);
+    const isPast = diffMs < 0;
+    const daysText = isPast ? Math.abs(diffDays) + '天前' : diffDays + '天后';
+    const displayDays = isPast ? Math.abs(diffDays) : diffDays;
+
+    // 根据剩余天数渐变颜色
+    let gradient = 'linear-gradient(135deg, #F5B5C0, #E88A9A)';
+    if (!isPast) {
+      if (diffDays <= 3) gradient = 'linear-gradient(135deg, #F5B5B5, #E88A8A)';
+      else if (diffDays <= 7) gradient = 'linear-gradient(135deg, #F5C9B0, #E8C070)';
+      else if (diffDays <= 30) gradient = 'linear-gradient(135deg, #A0C4E8, #8BC8A0)';
+      else gradient = 'linear-gradient(135deg, #A8D8B9, #A0C4E8)';
+    } else {
+      gradient = 'linear-gradient(135deg, #C9C0D4, #A99BD0)';
+    }
+
+    const countTypeLabel = item.countType === '正数日' ? '已过去' : '剩余';
+
+    return `
+      <div class="list-item" onclick="openModal('countdown','${item.id}')" style="cursor:pointer;align-items:center;">
+        <div style="font-size:36px;flex-shrink:0;width:54px;text-align:center;">${item.emoji || '🎉'}</div>
+        <div class="list-item-body">
+          <div class="list-item-title">${item.title}</div>
+          <div class="list-item-desc">📅 目标日 ${item.targetDate}${item.note ? ' · ' + item.note : ''}</div>
+        </div>
+        <div style="text-align:center;flex-shrink:0;min-width:80px;">
+          <div style="background:${gradient};color:white;border-radius:14px;padding:10px 14px;box-shadow:0 3px 12px rgba(232,138,154,0.2);">
+            <div style="font-size:11px;opacity:0.9;font-weight:500;">${isPast && item.countType!=='正数日' ? '已过' : countTypeLabel}</div>
+            <div style="font-size:24px;font-weight:700;line-height:1.2;">${displayDays}</div>
+            <div style="font-size:11px;opacity:0.9;">天</div>
+          </div>
+        </div>
+        <button class="delete-btn" onclick="event.stopPropagation();deleteItem('countdown','${item.id}')">×</button>
+      </div>
+    `;
+  }).join('');
+}
+
+// ========================================
+// 清除数据
+// ========================================
+function clearAllData() {
+  if (!confirm('确定要清除所有数据吗？此操作不可恢复！')) return;
+  const keys = ['wardrobe','finance','travel','gift','health','weight','todo','countdown'];
+  keys.forEach(k => localStorage.removeItem('pw_' + k));
+  showToast('所有数据已清除');
+  renderDashboard();
+}
+
+// ========================================
+// 空状态
+// ========================================
+function emptyState(title, desc) {
+  return `
+    <div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <p><strong>${title}</strong></p>
+      <p style="margin-top:4px;">${desc}</p>
+    </div>
+  `;
+}
+
+// ========================================
+// 初始化
+// ========================================
+initNav();
+</script>
+</body>
+</html>

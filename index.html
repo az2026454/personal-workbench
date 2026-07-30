@@ -23,6 +23,7 @@
   --accent-light: #F5B5C0;
   --accent-soft: #FBE9EE;
   --bg-tint: #F5F9FC;
+  --bg-deep: #A0C4E8;
   --accent-mint: #A8D8B9;
   --accent-sky: #A0C4E8;
   --accent-cream: #F5DEB3;
@@ -45,7 +46,7 @@
 html, body {
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-  background: linear-gradient(180deg, #FFFFFF 0%, var(--bg-tint, #F5F9FC) 100%);
+  background: linear-gradient(180deg, #FFFFFF 0%, var(--bg-tint, #F5F9FC) 50%, var(--bg-deep, #A0C4E8) 100%);
   color: var(--text-main);
   font-size: 14px;
   overflow: hidden;
@@ -56,7 +57,7 @@ html, body {
   position: fixed;
   left: 0; top: 0; bottom: 0;
   width: var(--nav-width);
-  background: linear-gradient(180deg, #FFFFFF 0%, var(--bg-tint, #F5F9FC) 100%);
+  background: linear-gradient(180deg, #FFFFFF 0%, var(--bg-tint, #F5F9FC) 50%, var(--bg-deep, #A0C4E8) 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -752,6 +753,7 @@ function applyAccent(pageId) {
   root.style.setProperty('--accent-light', a.l);
   root.style.setProperty('--accent-soft', a.s);
   root.style.setProperty('--bg-tint', a.s);
+  root.style.setProperty('--bg-deep', a.l);
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', a.m);
 }
